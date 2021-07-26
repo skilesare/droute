@@ -1,0 +1,35 @@
+{
+  "canisters": {
+    "droute": {
+      "main": "src/droute/main.mo",
+      "type": "motoko"
+    },
+    "droute_assets": {
+      "dependencies": [
+        "droute"
+      ],
+      "frontend": {
+        "entrypoint": "src/droute_assets/src/index.html"
+      },
+      "source": [
+        "src/droute_assets/assets",
+        "dist/droute_assets/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "dfx": "0.7.7",
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}
