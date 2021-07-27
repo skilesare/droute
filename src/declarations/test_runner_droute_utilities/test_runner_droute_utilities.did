@@ -1,0 +1,6 @@
+service : {
+  test: () -> (variant {
+                 fail: text;
+                 success;
+               });
+}

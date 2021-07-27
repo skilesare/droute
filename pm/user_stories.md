@@ -1,6 +1,6 @@
 
 
-Stakeholders
+# Stakeholders
 
 1. Application Developers(AppDev) - Application developers build application that use a mix of IC tech and traditional tech to build apps for their customers.
 2. Dependent Application Developers(DepDev) - Dependent application developers build applications that use a mix of IC tech and traditional tech to build apps and their apps depend on the behaviors of other apps in the IC ecosystem.
@@ -9,29 +9,83 @@ Stakeholders
 5. App user(App User) - an app user uses a service that implements dRoute.
 6. dRoute(Service) - the dRoute system.
 
-Form Language
+# Form Language
 
 Application - An computer program that seeks to accomplish some type of work.
+
 Event - an event is raised by an application and represents the occurrence of a particular computation on that application. It includes the event identifier and event metadata
+
 Event Identifier - represents a particular type of event
+
 Event Metadata - represents instance specific data about an event.
+
 Encrypted Event - An Event that has been encrypted so that only certain users can decode it.
+
 Event Subscription - A application can subscribe to an event an in order to have dRoute reserve the occurrence of that event for the subscribing application.
+
+Registration Canister - Canister used to map dRoute notification canisters and dRoute Queues to AppDevs and DepDevs.
+
 Event Notification Canisters - Canisters used to distribute notification and queue entries. Event Notification Canisters are owned by AppDevs.
+
 Event Queue - An event queue will keep a running queue of events that can be handled at an applications leisure.  Event Queue canisters are owned by DepDevs.
+
 Event Notification - A event that is delivered directly to a subscribing application.
+
+Implicit Notifications - A set of notifications that an AppDev or DepDev must implement so that they stay current about registrations.
+
 Event Filter - A filter put in place to limit the types, kind, or content of events that are reserved for an event subscription.
 
-Pattern Language
-
-Self Directed Management - AppDevs and DepDevs should be able to decide how their assigned canisters are manages/paid for.
-Secure Data - The System should provides secure data so that outside observers cannot divine what is going on with the system from the outside.
-Prompt Notification - The system should provide for prompt notification of events to be maximally useful.
+Event Throttle - A throttle puts in place limits to the number or speed of messages that can be handled and details how dropped messages should be chosen.
 
 
-User Stories
+# Pattern Language
+
+## Self Directed Management
+
+Supported by - Message Throttles, Message Filters
+
+AppDevs and DepDevs should be able to decide how their assigned canisters are managed/paid for.
+
+## Message Throttles -
+
+Supports: Self Directed Management
+
+Allow DepDevs to throttle the messages they receive in order to control costs.
+
+## Message Filters
+
+Supports: Self Directed Management
+
+Allows DepDevs to filter out messages they receive based on the content of the message in order to control costs.
+
+## Secure Data
+
+The System should provides secure data so that outside observers cannot divine what is going on with the system from the outside.
+
+## Prompt Notification
+
+The system should provide for prompt notification of events to be maximally useful.
+
+## Dynamic Registration
+
+The system should dynamically create and move canisters assignments to distribute load in the system.
+
+## Complexity Shield
+
+The dRoute libraries should shield the AppDev and DepDev from most of the complexity of the dRoute system.
+
+
+# User Stories
 
 1. AA AppDev IWT notify other apps of events that have ocurred during the processing of my application STI increase the network effects of my application.
+
+Status: Started
+
+Notes:
+
+I'm going to assume the multiple canister architecture from the beginning because other wise I'm just going to have a frustrating time trying to pull them apart.
+
+We are going to use piplinify data structures to handle data passing so that
 
 
 2. AA DepDev IWT subscribe to events of another app STI can trigger processing in my app based on that information.
@@ -102,5 +156,10 @@ User Stories
 
 24. AA AppDev IWT recover the cost of notifying DepDevs of events from my dRout canisters STI can control expenses.
 
+
+25. AA DepDev IWT throttle the incoming messages STI don't over spend on cycles.
+
+
+26. AA AppDev IWT submit events for another canister that has approved me STI can offload event creation from my main process.
 
 

@@ -4,6 +4,14 @@
       "main": "src/droute/main.mo",
       "type": "motoko"
     },
+    "test_runner": {
+      "main": "src/tests/test_runner.mo",
+      "type": "motoko"
+    },
+    "test_runner_droute_utilities": {
+      "main": "src/tests/test_runner_droute_utilities.mo",
+      "type": "motoko"
+    },
     "droute_assets": {
       "dependencies": [
         "droute"
@@ -21,7 +29,7 @@
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "vessel sources"
     }
   },
   "dfx": "0.7.7",
