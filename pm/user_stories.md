@@ -85,7 +85,20 @@ Notes:
 
 I'm going to assume the multiple canister architecture from the beginning because other wise I'm just going to have a frustrating time trying to pull them apart.
 
-We are going to use piplinify data structures to handle data passing so that
+We are going to use piplineify data structures to handle data passing so that we have all the pipelinify options like push pull, included, etc.
+
+I had to add the following to matchers.  I need to fork and reference the branch
+
+  public let nat8Testable : Testable<Nat8> = {
+        display = func (nat : Nat8) : Text {Nat8.toText(nat)};
+        equals = func (n1 : Nat8, n2 : Nat8) : Bool {n1 == n2};
+    };
+
+    public func nat8(n : Nat8) : TestableItem<Nat8> = {
+        item = n;
+        display = nat8Testable.display;
+        equals = nat8Testable.equals;
+    };
 
 
 2. AA DepDev IWT subscribe to events of another app STI can trigger processing in my app based on that information.

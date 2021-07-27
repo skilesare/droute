@@ -22,3 +22,6 @@ TrixTypes todo
 [ ] - getDataZoneSize test
 [ ] - getWorkspaceChunkSize test
 [ ] - getWorkspaceChunk test
+
+matchers
+[ ] Fork and add More Testables for Nat8, etc.
