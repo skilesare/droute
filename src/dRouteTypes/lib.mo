@@ -19,8 +19,7 @@ import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Debug "mo:base/Debug";
 import TrixTypes "../trixTypes/lib";
-
-
+import PipelinifyTypes "mo:pipelinify/pipelinify/PipelinifyTypes";
 
 module {
 
@@ -34,5 +33,80 @@ module {
     //field 1 : source - principal
     //field n-2...data
     public type DRouteEventStable = [TrixTypes.AddressedChunk];
+
+
+    public type EventRegistration = {
+        eventName: Text;
+        var validSources: {
+            #whitelist: [Principal];
+            #blacklist: [Principal];
+            #dynamic: {
+                canister: Text;
+            };
+        };
+        var publishingCanisters: [Principal];
+    };
+
+    public type NamespaceRight = {
+        namespace: Text;
+        controllers: [Principal];
+        authorized: [Principal];
+    };
+
+    public type DRouteEventDef = {
+        eventName: Text;
+        validSources: {
+            #whitelist: [Principal];
+            #blacklist: [Principal];
+            #dynamic: {
+                canister: Text;
+            };
+        };
+    };
+
+    public type DRouteInitialization = {
+        regCanister : ?Principal;
+        eventTypes: [DRouteEventDef];
+    };
+
+
+
+
+
+    public type EventPublishable = {
+        eventType: Text;
+        dataConfig: PipelinifyTypes.DataConfig;
+    };
+
+    public type PublishStatus = {
+        #recieved;
+        #delivered;
+    };
+
+    public type PublishResponse = {
+        id : Nat64;
+        timeProcessed : Int;
+        status: PublishStatus;
+    };
+
+    public type PublishError = {
+        code : Nat;
+        text : Text;
+    };
+
+
+    public type ConfirmEventRegistrtationResponse = {
+        #notFound;
+        #found: DRouteEventDef;
+    };
+
+    public type RegCanisterActor = actor {
+        getPublishingCanisters: (Nat) -> async [Text];
+    };
+
+    public type PublishingCanisterActor = actor {
+        publish: (EventPublishable) -> async Result.Result<PublishResponse,PublishError>;
+    };
+
 
 };

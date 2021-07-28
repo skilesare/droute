@@ -1,3 +1,86 @@
+type Result__1 = 
+ variant {
+   err: PublishError;
+   ok: PublishResponse;
+ };
+type Result = 
+ variant {
+   err: ProcessError;
+   ok: ChunkResponse;
+ };
+type PublishStatus = 
+ variant {
+   delivered;
+   recieved;
+ };
+type PublishResponse = 
+ record {
+   id: nat64;
+   status: PublishStatus;
+   timeProcessed: int;
+ };
+type PublishError = 
+ record {
+   code: nat;
+   "text": text;
+ };
+type ProcessError = 
+ record {
+   code: nat;
+   "text": text;
+ };
+type Hash = nat32;
+type EventPublishable = 
+ record {
+   dataConfig: DataConfig;
+   eventType: text;
+ };
+type DataSource = 
+ service {
+   queryPipelinifyChunk: (ChunkRequest) -> (Result) query;
+   requestPipelinifyChunk: (ChunkRequest) -> (Result);
+ };
+type DataConfig = 
+ variant {
+   dataIncluded: record {data: vec AddressedChunk;};
+   internal;
+   pull:
+    record {
+      data: opt vec AddressedChunk;
+      mode: variant {
+              pull;
+              pullQuery;
+            };
+      sourceActor: opt DataSource;
+      sourceIdentifier: opt Hash;
+      totalChunks: opt nat32;
+    };
+   push;
+ };
+type ChunkResponse = 
+ variant {
+   chunk: vec AddressedChunk;
+   eof: vec AddressedChunk;
+   err: ProcessError;
+   parallel: record {
+               nat;
+               nat;
+               vec AddressedChunk;
+             };
+ };
+type ChunkRequest = 
+ record {
+   chunkID: nat;
+   event: opt text;
+   sourceIdentifier: opt Hash;
+ };
+type AddressedChunk = 
+ record {
+   nat;
+   nat;
+   vec nat8;
+ };
 service : {
-  greet: (text) -> (text);
+  getPublishingCanisters: (nat) -> (vec text);
+  publish: (EventPublishable) -> (Result__1);
 }

@@ -20,53 +20,24 @@ import Hash "mo:base/Hash";
 import HashMap "mo:base/HashMap";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
-import PipelinifyTypes "mo:pipelinify/pipelinify/PipelinifyTypes";
-import TrixTypes "../TrixTypes/lib";
+import TrixTypes "../TrixTypes";
+import Principal "mo:base/Principal";
+//import RegCanister "../droute/main";
+import dRouteTypes "../dRouteTypes";
 
 module {
 
     //Types
 
-    public type DRouteEventDef = {
-        eventName: Text;
-        validSources: {
-            #whitelist: [Principal];
-            #blacklist: [Principal];
-            #dynamic: {
-                canister: Text;
-            };
-        };
-    };
-
-    public type DRouteInitialization = {
-        regCanister : ?Principal;
-        eventTypes: [DRouteEventDef];
-    };
-
-
-
-
-
-    public type EventPublishable = {
-        eventType: Text;
-        dataConfig: PipelinifyTypes.DataConfig;
-    };
-
-    public type PublishStatus = {
-        #recieved;
-        #delivered;
-    };
-
-    public type PublishResponse = {
-        id : Nat64;
-        timeProcessed : Int;
-        status: PublishStatus;
-    };
-
-    public type PublishError = {
-        code : Nat;
-        text : Text;
-    };
+    public type DRouteEventDef = dRouteTypes.DRouteEventDef;
+    public type DRouteInitialization = dRouteTypes.DRouteInitialization;
+    public type EventPublishable = dRouteTypes.EventPublishable;
+    public type PublishStatus = dRouteTypes.PublishStatus;
+    public type PublishResponse = dRouteTypes.PublishResponse;
+    public type PublishError = dRouteTypes.PublishError;
+    public type ConfirmEventRegistrtationResponse = dRouteTypes.ConfirmEventRegistrtationResponse;
+    public type RegCanisterActor =  dRouteTypes.RegCanisterActor;
+    public type PublishingCanisterActor =  dRouteTypes.PublishingCanisterActor;
 
     public class dRoutePublisher(){
         type Result<T,E> = Result.Result<T,E>;
@@ -75,15 +46,10 @@ module {
             _self;
         };
 
-        public func ensureRegistration(def : DRouteEventDef){
-            //check the local cache to see if the def is in it
+        var publishingCanisters : [Text] = [];
 
-            //if it is return true
-
-            //if not, register it
-
-            //update the cache
-        };
+        //todo: create strategy for updating this as soon to instantiation as possible
+        var regPrincipal = Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai");
 
         public func updateRegistration() {
             //pass in a complicated structure and call different functions on the reg canister to update the registration
@@ -91,16 +57,45 @@ module {
 
         };
 
-        public func syncRegistration(){
+        public func syncRegistration() : async Bool {
             //pull configs from the reg canister and sync them with the local cache.
+            let RegCanister : RegCanisterActor = actor(Principal.toText(regPrincipal));
+
+            //todo: may want to allow for private or public See UserStories 27. 28.
+            publishingCanisters := await RegCanister.getPublishingCanisters(16);
+            Debug.print(debug_show(publishingCanisters));
+
+            return true;
         };
 
+        public func publish(event : EventPublishable) : async Result<PublishResponse, PublishError> {
 
-        public func register() {
+            //check to see if we have a set of canisters to send messages to
+            let RegCanister : RegCanisterActor = actor(Principal.toText(regPrincipal));
 
-        };
+            Debug.print(debug_show(publishingCanisters.size()));
+            if(publishingCanisters.size() == 0){
+                Debug.print("syncing");
+                let sync = await syncRegistration();
+            };
+            Debug.print(debug_show(Int.abs(Time.now())));
+            Debug.print(debug_show(publishingCanisters));
+            let targetCanister = publishingCanisters[Nat.rem(Int.abs(Time.now()), publishingCanisters.size())];
+            //send the message to the pulication canister
 
-        public func publish(event : EventPublishable) : Result<PublishResponse, PublishError> {
+            let publishingCanister : PublishingCanisterActor = actor(targetCanister);
+
+            let publishResult = await publishingCanister.publish(event);
+
+            switch publishResult{
+                case(#ok(result)){
+                    return publishResult;
+                };
+                case(#err(err)){
+                    return #err(err);
+                };
+            };
+
             return #err({code=404;text="Not Implemented"});
         };
 

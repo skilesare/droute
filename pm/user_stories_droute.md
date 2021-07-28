@@ -135,11 +135,15 @@ I had to add the following to matchers.  I need to fork and reference the branch
     };
 
 
-1A. AA AppDev IWT register my event with the dRoute canister STI am discoverable by other services
+1A. AA AppDev IWT have my event auto registered with the dRoute canister STI am discoverable by other services
 
 Status: started
 
-1B. AA Service IWT reject unregistered events STI can force registration and valid workflow.
+1B. AA Service IWT forward event messages to the least busy processing queue STI get it processed in a timely manner.
+
+Status: Pending 1A
+
+
 
 2. AA DepDev IWT subscribe to events of another app STI can trigger processing in my app based on that information.
 
@@ -215,4 +219,15 @@ Status: started
 
 26. AA AppDev IWT submit events for another canister that has approved me STI can offload event creation from my main process.
 
+27. AA AppDev IWT request my own private set of publication canisters that only I can publish to STI won't get blocked by other apps.
+
+28. AA AppDev IWT request shared publication canisters STI can reduce my costs if I'm willing for reduced delivery times.
+
+29. AA AppDev IWT request a certain number of publication canisters STI can spread the load of my messages across a wide range of servers.
+
+Notes:
+
+We are hard coding the server for the moment and we'll load up the reg canister with the publish functions for the POC and split out later.
+
+Status: Freezer
 

@@ -1,4 +1,4 @@
-import RegCanister "canister:droute";
+//import RegCanister "canister:droute";
 import C "mo:matchers/Canister";
 import M "mo:matchers/Matchers";
 import T "mo:matchers/Testable";

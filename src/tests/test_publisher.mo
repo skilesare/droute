@@ -30,6 +30,8 @@ actor Self{
     public shared func testSimpleNotify() : async {#success; #fail : Text} {
         Debug.print("running testSimpleNotify");
 
+        let dRoutePub = dRoutePublisher.dRoutePublisher();
+
         let event = {
             eventType = "test123";
             dataConfig = #dataIncluded{
@@ -39,7 +41,7 @@ actor Self{
 
         Debug.print(debug_show(event));
 
-        let result = dRoutePub.publish(event);
+        let result = await dRoutePub.publish(event);
 
         switch(result){
             case(#ok(result)){
@@ -48,7 +50,6 @@ actor Self{
                 let suite = S.suite("test simpleNotify", [
                     S.test("id exists", result.id, M.anything<Nat64>()),
                     S.test("time exists", result.timeProcessed, M.anything<Int>()),
-
                     S.test("status is recieved", switch(result.status){case(#recieved){true};case(_){false};}, M.equals<Bool>(T.bool(true)))
                 ]);
 
@@ -66,6 +67,6 @@ actor Self{
     };
 
 
-    let dRoutePub = dRoutePublisher.dRoutePublisher();
+
 
 };
