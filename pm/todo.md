@@ -1,10 +1,10 @@
 
 dRoute
 
-[ ] - textToBytes in pipelinify
-[ ] - bytesToText in pipelinify
+[x] - textToBytes in trixTypes
+[x] - bytesToText in trixTypes
 [ ] - tests in pipelinify
-[ ] - test conversion from dRoute Event to stable
+[x] - test conversion from dRoute Event to stable
 
 
 TrixTypes todo

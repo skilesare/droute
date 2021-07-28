@@ -79,7 +79,7 @@ The dRoute libraries should shield the AppDev and DepDev from most of the comple
 
 1. AA AppDev IWT notify other apps of events that have ocurred during the processing of my application STI increase the network effects of my application.
 
-Status: Started
+Status: Pending 1A
 
 Notes:
 
@@ -100,6 +100,46 @@ I had to add the following to matchers.  I need to fork and reference the branch
         equals = nat8Testable.equals;
     };
 
+    public let nat16Testable : Testable<Nat16> = {
+        display = func (nat : Nat16) : Text {Nat16.toText(nat)};
+        equals = func (n1 : Nat16, n2 : Nat16) : Bool {n1 == n2};
+    };
+
+    public func nat16(n : Nat16) : TestableItem<Nat16> = {
+        item = n;
+        display = nat16Testable.display;
+        equals = nat16Testable.equals;
+    };
+
+    public let nat32Testable : Testable<Nat32> = {
+        display = func (nat : Nat32) : Text {Nat32.toText(nat)};
+        equals = func (n1 : Nat32, n2 : Nat32) : Bool {n1 == n2};
+    };
+
+    public func nat32(n : Nat32) : TestableItem<Nat32> = {
+        item = n;
+        display = nat32Testable.display;
+        equals = nat32Testable.equals;
+    };
+
+
+    public let nat64Testable : Testable<Nat64> = {
+        display = func (nat : Nat64) : Text {Nat64.toText(nat)};
+        equals = func (n1 : Nat64, n2 : Nat64) : Bool {n1 == n2};
+    };
+
+    public func nat64(n : Nat64) : TestableItem<Nat64> = {
+        item = n;
+        display = nat64Testable.display;
+        equals = nat64Testable.equals;
+    };
+
+
+1A. AA AppDev IWT register my event with the dRoute canister STI am discoverable by other services
+
+Status: started
+
+1B. AA Service IWT reject unregistered events STI can force registration and valid workflow.
 
 2. AA DepDev IWT subscribe to events of another app STI can trigger processing in my app based on that information.
 

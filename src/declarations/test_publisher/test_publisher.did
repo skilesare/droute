@@ -1,0 +1,10 @@
+service : {
+  test: () -> (variant {
+                 fail: text;
+                 success;
+               });
+  testSimpleNotify: () -> (variant {
+                             fail: text;
+                             success;
+                           });
+}

@@ -25,9 +25,16 @@ import Blob "mo:base/Blob";
 
 module {
 
+    //a data chunk should be no larger than 2MB so that it can be
     public type DataChunk = Buffer.Buffer<Nat8>;
     public type DataZone = Buffer.Buffer<DataChunk>;
     public type Workspace = Buffer.Buffer<DataZone>;
+
+    public type AddressedChunk = (Nat, Nat, [Nat8]);
+
+    public type AddressedChunkArray = [(Nat, Nat, [Nat8])];
+
+    public type AddressedChunkBuffer = Buffer.Buffer<AddressedChunk>;
 
     public func nat32ToBytes(x : Nat32) : [Nat8] {
         [ Nat8.fromNat(Nat32.toNat((x >> 24) & (255))),
@@ -54,12 +61,6 @@ module {
         (Nat32.fromNat(Nat8.toNat(bytes[3])));
     };
 
-    public type AddressedChunk = (Nat, Nat, [Nat8]);
-
-    public type AddressedChunkArray = [(Nat, Nat, [Nat8])];
-
-    public type AddressedChunkBuffer = Buffer.Buffer<AddressedChunk>;
-
     //creates a buffer of type Nat8 from an array of Nat8
     public func toBufferNat8(x : [Nat8]) : Buffer.Buffer<Nat8> {
         let theBuffer = Buffer.Buffer<Nat8>(x.size());
@@ -70,6 +71,45 @@ module {
         return theBuffer;
     };
 
+    public func textToByteBuffer(_text : Text) : Buffer.Buffer<Nat8>{
+        let result : Buffer.Buffer<Nat8> = Buffer.Buffer<Nat8>((_text.size() * 4) +4);
+        for(thisChar in _text.chars()){
+            for(thisByte in nat32ToBytes(Char.toNat32(thisChar)).vals()){
+                result.add(thisByte);
+            };
+        };
+        return result;
+    };
+
+    public func textToBytes(_text : Text) : [Nat8]{
+        return textToByteBuffer(_text).toArray();
+    };
+
+
+    public func bytesToText(_bytes : [Nat8]) : Text{
+        var result : Text = "";
+        var aChar : [var Nat8] = [var 0, 0, 0, 0];
+
+        for(thisChar in Iter.range(0,_bytes.size())){
+            if(thisChar > 0 and thisChar % 4 == 0){
+                aChar[0] := _bytes[thisChar-4];
+                aChar[1] := _bytes[thisChar-3];
+                aChar[2] := _bytes[thisChar-2];
+                aChar[3] := _bytes[thisChar-1];
+                result := result # Char.toText(Char.fromNat32(bytesToNat32(Array.freeze<Nat8>(aChar))));
+            };
+        };
+        return result;
+    };
+
+    public func principalToBytes(_principal: Principal.Principal) : [Nat8]{
+        return textToBytes(Principal.toText(_principal));
+    };
+
+    //todo: this should go to Blob once they add Principal.fromBlob
+    public func bytesToPrincipal(_bytes: [Nat8]) : Principal.Principal{
+        return Principal.fromText(bytesToText(_bytes));
+    };
 
     public func countAddressedChunksInWorkspace(x : Workspace) : Nat{
         var chunks = 0;
@@ -269,44 +309,6 @@ module {
         return (#eof, resultBuffer);
     };
 
-    public func textToByteBuffer(_text : Text) : Buffer.Buffer<Nat8>{
-        let result : Buffer.Buffer<Nat8> = Buffer.Buffer<Nat8>((_text.size() * 4) +4);
-        for(thisChar in _text.chars()){
-            for(thisByte in nat32ToBytes(Char.toNat32(thisChar)).vals()){
-                result.add(thisByte);
-            };
-        };
-        return result;
-    };
 
-    public func textToBytes(_text : Text) : [Nat8]{
-        return textToByteBuffer(_text).toArray();
-    };
-
-
-    public func bytesToText(_bytes : [Nat8]) : Text{
-        var result : Text = "";
-        var aChar : [var Nat8] = [var 0, 0, 0, 0];
-
-        for(thisChar in Iter.range(0,_bytes.size())){
-            if(thisChar > 0 and thisChar % 4 == 0){
-                aChar[0] := _bytes[thisChar-4];
-                aChar[1] := _bytes[thisChar-3];
-                aChar[2] := _bytes[thisChar-2];
-                aChar[3] := _bytes[thisChar-1];
-                result := result # Char.toText(Char.fromNat32(bytesToNat32(Array.freeze<Nat8>(aChar))));
-            };
-        };
-        return result;
-    };
-
-    public func principalToBytes(_principal: Principal.Principal) : [Nat8]{
-        return textToBytes(Principal.toText(_principal));
-    };
-
-    //todo: this should go to Blob once they add Principal.fromBlob
-    public func bytesToPrincipal(_bytes: [Nat8]) : Principal.Principal{
-        return Principal.fromText(bytesToText(_bytes));
-    };
 
 };

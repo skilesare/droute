@@ -12,6 +12,11 @@
       "main": "src/tests/test_runner_droute_utilities.mo",
       "type": "motoko"
     },
+    "test_publisher": {
+      "main": "src/tests/test_publisher.mo",
+      "type": "motoko"
+    },
+
     "droute_assets": {
       "dependencies": [
         "droute"
