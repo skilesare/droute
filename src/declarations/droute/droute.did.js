@@ -9,6 +9,9 @@ export const idlFactory = ({ IDL }) => {
     'validSources' : ValidSourceOptions,
     'eventType' : IDL.Text,
   });
+  const PublishError = IDL.Record({ 'code' : IDL.Nat, 'text' : IDL.Text });
+  const NotifyResponse = IDL.Variant({ 'ok' : IDL.Bool, 'err' : PublishError });
+  const Result_2 = IDL.Variant({ 'ok' : NotifyResponse, 'err' : PublishError });
   const Hash = IDL.Nat32;
   const AddressedChunk = IDL.Tuple(IDL.Nat, IDL.Nat, IDL.Vec(IDL.Nat8));
   const ChunkRequest = IDL.Record({
@@ -23,10 +26,10 @@ export const idlFactory = ({ IDL }) => {
     'chunk' : IDL.Vec(AddressedChunk),
     'parallel' : IDL.Tuple(IDL.Nat, IDL.Nat, IDL.Vec(AddressedChunk)),
   });
-  const Result = IDL.Variant({ 'ok' : ChunkResponse, 'err' : ProcessError });
+  const Result__1 = IDL.Variant({ 'ok' : ChunkResponse, 'err' : ProcessError });
   const DataSource = IDL.Service({
-    'queryPipelinifyChunk' : IDL.Func([ChunkRequest], [Result], ['query']),
-    'requestPipelinifyChunk' : IDL.Func([ChunkRequest], [Result], []),
+    'queryPipelinifyChunk' : IDL.Func([ChunkRequest], [Result__1], ['query']),
+    'requestPipelinifyChunk' : IDL.Func([ChunkRequest], [Result__1], []),
   });
   const DataConfig = IDL.Variant({
     'internal' : IDL.Null,
@@ -56,9 +59,22 @@ export const idlFactory = ({ IDL }) => {
     'timeRecieved' : IDL.Int,
     'publishCanister' : Principal,
   });
-  const PublishError = IDL.Record({ 'code' : IDL.Nat, 'text' : IDL.Text });
-  const Result__1 = IDL.Variant({
+  const PublishError__1 = IDL.Record({ 'code' : IDL.Nat, 'text' : IDL.Text });
+  const Result_1 = IDL.Variant({
     'ok' : PublishResponse,
+    'err' : PublishError__1,
+  });
+  const SubscriptionFilter = IDL.Variant({ 'notImplemented' : IDL.Null });
+  const SubscriptionThrottle = IDL.Variant({ 'notImplemented' : IDL.Null });
+  const SubscriptionRequest = IDL.Record({
+    'destination' : IDL.Principal,
+    'filter' : IDL.Opt(SubscriptionFilter),
+    'throttle' : IDL.Opt(SubscriptionThrottle),
+    'eventType' : IDL.Text,
+  });
+  const SubscriptionResponse = IDL.Record({ 'subscriptionID' : IDL.Nat });
+  const Result = IDL.Variant({
+    'ok' : SubscriptionResponse,
     'err' : PublishError,
   });
   return IDL.Service({
@@ -68,7 +84,9 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'getPublishingCanisters' : IDL.Func([IDL.Nat], [IDL.Vec(IDL.Text)], []),
-    'publish' : IDL.Func([EventPublishable], [Result__1], []),
+    'processQueue' : IDL.Func([], [Result_2], []),
+    'publish' : IDL.Func([EventPublishable], [Result_1], []),
+    'subscribe' : IDL.Func([SubscriptionRequest], [Result], []),
   });
 };
 export const init = ({ IDL }) => { return []; };

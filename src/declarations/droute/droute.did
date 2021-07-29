@@ -4,15 +4,35 @@ type ValidSourceOptions =
    dynamic: record {canister: text;};
    whitelist: vec principal;
  };
+type SubscriptionThrottle = variant {notImplemented;};
+type SubscriptionResponse = record {subscriptionID: nat;};
+type SubscriptionRequest = 
+ record {
+   destination: principal;
+   eventType: text;
+   filter: opt SubscriptionFilter;
+   throttle: opt SubscriptionThrottle;
+ };
+type SubscriptionFilter = variant {notImplemented;};
 type Result__1 = 
  variant {
+   err: ProcessError;
+   ok: ChunkResponse;
+ };
+type Result_2 = 
+ variant {
    err: PublishError;
+   ok: NotifyResponse;
+ };
+type Result_1 = 
+ variant {
+   err: PublishError__1;
    ok: PublishResponse;
  };
 type Result = 
  variant {
-   err: ProcessError;
-   ok: ChunkResponse;
+   err: PublishError;
+   ok: SubscriptionResponse;
  };
 type PublishStatus = 
  variant {
@@ -26,6 +46,11 @@ type PublishResponse =
    status: PublishStatus;
    timeRecieved: int;
  };
+type PublishError__1 = 
+ record {
+   code: nat;
+   "text": text;
+ };
 type PublishError = 
  record {
    code: nat;
@@ -37,6 +62,11 @@ type ProcessError =
    "text": text;
  };
 type Principal = principal;
+type NotifyResponse = 
+ variant {
+   err: PublishError;
+   ok: bool;
+ };
 type Hash = nat32;
 type EventRegistrationStable = 
  record {
@@ -52,8 +82,8 @@ type EventPublishable =
  };
 type DataSource = 
  service {
-   queryPipelinifyChunk: (ChunkRequest) -> (Result) query;
-   requestPipelinifyChunk: (ChunkRequest) -> (Result);
+   queryPipelinifyChunk: (ChunkRequest) -> (Result__1) query;
+   requestPipelinifyChunk: (ChunkRequest) -> (Result__1);
  };
 type DataConfig = 
  variant {
@@ -98,5 +128,7 @@ type AddressedChunk =
 service : {
   getEventRegistration: (text) -> (opt EventRegistrationStable);
   getPublishingCanisters: (nat) -> (vec text);
-  publish: (EventPublishable) -> (Result__1);
+  processQueue: () -> (Result_2);
+  publish: (EventPublishable) -> (Result_1);
+  subscribe: (SubscriptionRequest) -> (Result);
 }

@@ -38,12 +38,16 @@ actor Self{
         return [Principal.toText(Principal.fromActor(Self))];
     };
 
+    public func subscribe(subInit : DRouteTypes.SubscriptionRequest) : async Result.Result<DRouteTypes.SubscriptionResponse, DRouteTypes.PublishError>{
+        return #err({code=404; text="not implemented subscribe"})
+    };
+
     /////////////////////////////////////////
     //todo: probably needs to be moved to a different class for the PublishingCanister Class
     //keep below chunk seperated to move to a different canister
     ////////////////////////////////////////
 
-    stable var processQueue: List.List<DRouteTypes.DRouteEvent> = List.nil<DRouteTypes.DRouteEvent>();
+    stable var pendingQueue: List.List<DRouteTypes.DRouteEvent> = List.nil<DRouteTypes.DRouteEvent>();
     stable var nonce : Nat = 0;
 
     public func getEventRegistration(eventType : Text) : async ?DRouteTypes.EventRegistrationStable{
@@ -127,7 +131,7 @@ actor Self{
             timeRecieved = Time.now();
         };
 
-        processQueue := List.push(thisEvent, processQueue);
+        pendingQueue := List.push(thisEvent, pendingQueue);
 
         return #ok({
             dRouteID = thisEvent.dRouteID;
@@ -137,9 +141,16 @@ actor Self{
         });
 
 
-       return #err({code=404;text="Not Implemented"});
+       //return #err({code=404;text="Not Implemented"});
     };
+
+    public func processQueue() : async Result.Result<DRouteTypes.NotifyResponse,DRouteTypes.PublishError>{
+        return #err({code=404; text="not implemented subscribe"})
+    };
+
+
 };
+
 
 /*
 import DRouteTypes "types";

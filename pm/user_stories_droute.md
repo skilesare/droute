@@ -203,6 +203,8 @@ Status: Started
 
 20. AA DepDev IWT have the option to have events queue up STI can handle them at my own pace.
 
+Status: Freezer - I think we can handle this with just an event processing canister and the only thing a user has to do is to point the subscription to their processing canisters
+
 
 21. AA DepDev IWT bto filter out events based on their metadata content STI don't get bombarded by events that I don't care about.
 

@@ -29,6 +29,15 @@ module {
         dataConfig : PipelinifyTypes.DataConfig;
         dRouteID: Nat;
         userID: Nat;
+        //todo
+        //certification: {
+        //    #signature;
+        //    #witness:{
+        //        canister: Principal;
+        //        witness: Blob;
+        //    };
+        //    #none;
+        //};
     };
 
     //field 0 : name - text
@@ -112,13 +121,48 @@ module {
         #found: DRouteEventDef;
     };
 
+
+
+    public type SubscriptionFilter = {
+        #notImplemented;
+    };
+
+    public type SubscriptionThrottle = {
+        #notImplemented;
+    };
+
+    public type SubscriptionRequest = {
+
+        eventType : Text;
+        filter: ?SubscriptionFilter;
+        throttle: ?SubscriptionThrottle;
+        destination: Principal;
+
+    };
+
+    public type SubscriptionResponse = {
+        subscriptionID: Nat;
+    };
+
+    public type NotifyResponse = Result.Result<Bool, PublishError>;
+    public type ProcessQueueResponse= {
+        eventsProcessed: Nat;
+        queueLength: Nat;
+    };
+
     public type RegCanisterActor = actor {
         getPublishingCanisters: (Nat) -> async [Text];
         getEventRegistration: (Text) -> async ?EventRegistrationStable;
+        subscribe: (SubscriptionRequest) -> async Result.Result<SubscriptionResponse, PublishError>;
     };
 
     public type PublishingCanisterActor = actor {
         publish: (EventPublishable) -> async Result.Result<PublishResponse,PublishError>;
+        processQueue: () -> async Result.Result<ProcessQueueResponse, PublishError>;
+    };
+
+    public type ListenerCanisterActor = actor {
+        __dRouteNotify: (DRouteEvent) -> async Result.Result<NotifyResponse,PublishError>;
     };
 
 
