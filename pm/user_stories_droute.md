@@ -79,7 +79,7 @@ The dRoute libraries should shield the AppDev and DepDev from most of the comple
 
 1. AA AppDev IWT notify other apps of events that have ocurred during the processing of my application STI increase the network effects of my application.
 
-Status: Pending 1A
+Status: Pending 2
 
 Notes:
 
@@ -137,15 +137,17 @@ I had to add the following to matchers.  I need to fork and reference the branch
 
 1A. AA AppDev IWT have my event auto registered with the dRoute canister STI am discoverable by other services
 
-Status: started
+Status: Pending 1C
 
 1B. AA Service IWT forward event messages to the least busy processing queue STI get it processed in a timely manner.
 
-Status: Pending 1A
+Status: Pending 1C
 
-
+1C. AA Service IWT have my registration be scalable STI can handle more than 2GB of registrations
 
 2. AA DepDev IWT subscribe to events of another app STI can trigger processing in my app based on that information.
+
+Status: Started
 
 
 3. AA DepDev User IWT stake my tokens in dRoute STI can get notification priority.
@@ -230,4 +232,10 @@ Notes:
 We are hard coding the server for the moment and we'll load up the reg canister with the publish functions for the POC and split out later.
 
 Status: Freezer
+
+30. AA Service IWT distribute relevant registrations to assigned publishing canisters STI don't require a query call back to the main canister for registration info.
+
+31. AA AppDev IWT assign a discoverable ID to my events STI can find them later.
+
+Status: Completed
 

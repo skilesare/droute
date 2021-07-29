@@ -1,3 +1,9 @@
+type ValidSourceOptions = 
+ variant {
+   blacklist: vec principal;
+   dynamic: record {canister: text;};
+   whitelist: vec principal;
+ };
 type Result__1 = 
  variant {
    err: PublishError;
@@ -15,9 +21,10 @@ type PublishStatus =
  };
 type PublishResponse = 
  record {
-   id: nat64;
+   dRouteID: nat;
+   publishCanister: Principal;
    status: PublishStatus;
-   timeProcessed: int;
+   timeRecieved: int;
  };
 type PublishError = 
  record {
@@ -29,11 +36,19 @@ type ProcessError =
    code: nat;
    "text": text;
  };
+type Principal = principal;
 type Hash = nat32;
+type EventRegistrationStable = 
+ record {
+   eventType: text;
+   publishingCanisters: vec text;
+   validSources: ValidSourceOptions;
+ };
 type EventPublishable = 
  record {
    dataConfig: DataConfig;
    eventType: text;
+   userID: nat;
  };
 type DataSource = 
  service {
@@ -81,6 +96,7 @@ type AddressedChunk =
    vec nat8;
  };
 service : {
+  getEventRegistration: (text) -> (opt EventRegistrationStable);
   getPublishingCanisters: (nat) -> (vec text);
   publish: (EventPublishable) -> (Result__1);
 }

@@ -6,6 +6,8 @@ import Debug "mo:base/Debug";
 import RegCanister "canister:droute";
 import UtilityTestCanister "canister:test_runner_droute_utilities";
 import PublisherTestCanister "canister:test_publisher";
+import DRouteTypes "../dRouteTypes";
+import DRouteUtilities "../dRouteUtilities";
 
 actor {
     let it = C.Tester({ batchSize = 8 });
@@ -20,7 +22,6 @@ actor {
           //M.attempt(greeting, M.equals(T.text("Hello, Christoph!")))
           return result;
         });
-
 
 
         it.should("run publisher tests", func () : async C.TestResult = async {

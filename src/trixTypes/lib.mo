@@ -11,6 +11,7 @@ import Text "mo:base/Text";
 import Result "mo:base/Result";
 import Principal "mo:base/Principal";
 import Hash "mo:base/Hash";
+import List "mo:base/List";
 import Nat "mo:base/Nat";
 import Nat8 "mo:base/Nat8";
 import Nat32 "mo:base/Nat32";
@@ -59,6 +60,32 @@ module {
         (Nat32.fromNat(Nat8.toNat(bytes[1])) << 16) +
         (Nat32.fromNat(Nat8.toNat(bytes[2])) << 8) +
         (Nat32.fromNat(Nat8.toNat(bytes[3])));
+    };
+
+
+    public func natToBytes(n : Nat) : [Nat8] {
+        var a : Nat8 = 0;
+        var b : Nat = n;
+        var bytes = List.nil<Nat8>();
+        var test = true;
+        while test {
+            a := Nat8.fromNat(b % 256);
+            b := b / 256;
+            bytes := List.push<Nat8>(a, bytes);
+            test := b > 0;
+        };
+        List.toArray<Nat8>(bytes);
+    };
+
+    public func bytesToNat(bytes : [Nat8]) : Nat {
+        var n : Nat = 0;
+        var i = 0;
+        Array.foldRight<Nat8, ()>(bytes, (), func (byte, _) {
+            n += Nat8.toNat(byte) * 256 ** i;
+            i += 1;
+            return;
+        });
+        return n;
     };
 
     //creates a buffer of type Nat8 from an array of Nat8

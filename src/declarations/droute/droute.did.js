@@ -1,4 +1,14 @@
 export const idlFactory = ({ IDL }) => {
+  const ValidSourceOptions = IDL.Variant({
+    'blacklist' : IDL.Vec(IDL.Principal),
+    'whitelist' : IDL.Vec(IDL.Principal),
+    'dynamic' : IDL.Record({ 'canister' : IDL.Text }),
+  });
+  const EventRegistrationStable = IDL.Record({
+    'publishingCanisters' : IDL.Vec(IDL.Text),
+    'validSources' : ValidSourceOptions,
+    'eventType' : IDL.Text,
+  });
   const Hash = IDL.Nat32;
   const AddressedChunk = IDL.Tuple(IDL.Nat, IDL.Nat, IDL.Vec(IDL.Nat8));
   const ChunkRequest = IDL.Record({
@@ -31,6 +41,7 @@ export const idlFactory = ({ IDL }) => {
     'dataIncluded' : IDL.Record({ 'data' : IDL.Vec(AddressedChunk) }),
   });
   const EventPublishable = IDL.Record({
+    'userID' : IDL.Nat,
     'dataConfig' : DataConfig,
     'eventType' : IDL.Text,
   });
@@ -38,10 +49,12 @@ export const idlFactory = ({ IDL }) => {
     'recieved' : IDL.Null,
     'delivered' : IDL.Null,
   });
+  const Principal = IDL.Principal;
   const PublishResponse = IDL.Record({
-    'id' : IDL.Nat64,
     'status' : PublishStatus,
-    'timeProcessed' : IDL.Int,
+    'dRouteID' : IDL.Nat,
+    'timeRecieved' : IDL.Int,
+    'publishCanister' : Principal,
   });
   const PublishError = IDL.Record({ 'code' : IDL.Nat, 'text' : IDL.Text });
   const Result__1 = IDL.Variant({
@@ -49,6 +62,11 @@ export const idlFactory = ({ IDL }) => {
     'err' : PublishError,
   });
   return IDL.Service({
+    'getEventRegistration' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(EventRegistrationStable)],
+        [],
+      ),
     'getPublishingCanisters' : IDL.Func([IDL.Nat], [IDL.Vec(IDL.Text)], []),
     'publish' : IDL.Func([EventPublishable], [Result__1], []),
   });

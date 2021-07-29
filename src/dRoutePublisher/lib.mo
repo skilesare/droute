@@ -49,7 +49,7 @@ module {
         var publishingCanisters : [Text] = [];
 
         //todo: create strategy for updating this as soon to instantiation as possible
-        var regPrincipal = Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai");
+        public var regPrincipal = Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai");
 
         public func updateRegistration() {
             //pass in a complicated structure and call different functions on the reg canister to update the registration

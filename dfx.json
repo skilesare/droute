@@ -14,7 +14,10 @@
     },
     "test_publisher": {
       "main": "src/tests/test_publisher.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "dependencies": [
+        "droute"
+      ]
     },
 
     "droute_assets": {

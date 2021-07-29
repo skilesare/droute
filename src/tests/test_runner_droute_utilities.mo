@@ -21,15 +21,18 @@ actor Self{
 
 
           try {
-            let data = TrixTypes.fromAddressedChunks([
+            /*
+            let data = [
             (0,0,TrixTypes.nat16ToBytes(1:Nat16)),
             (0,1,TrixTypes.nat16ToBytes(2:Nat16)),
-            (1,0,TrixTypes.nat16ToBytes(3:Nat16))]);
+            (1,0,TrixTypes.nat16ToBytes(3:Nat16))];
 
 
             let dRouteEvent = DrouteUtilities.createEvent(
               "com.test.construction",
               Principal.fromActor(Self),
+              1,
+              1,
               data);
 
             Debug.print("principal" # debug_show(Principal.fromActor(Self)));
@@ -40,30 +43,47 @@ actor Self{
             let stableDRouteEvent = DrouteUtilities.toStableEvent(dRouteEvent);
 
             Debug.print("result " # debug_show(stableDRouteEvent));
+            let stableTextFieldIndex = 0;
+            let stablePrincipalFieldIndex = 1;
+            let stableUserIDFieldIndex = 2;
+            let stableDRouteIDFieldIndex = 3;
 
-            let stableTextField : Text = TrixTypes.bytesToText(stableDRouteEvent[0].2);
+            let stableTextField : Text = TrixTypes.bytesToText(stableDRouteEvent[stableTextFieldIndex].2);
+            let stableUserIDField : Nat = TrixTypes.bytesToNat(stableDRouteEvent[stableUserIDFieldIndex].2);
+            let stableDRouteIDField : Nat = TrixTypes.bytesToNat(stableDRouteEvent[stableDRouteIDFieldIndex].2);
+
+
+            let dataFieldIndexStart = 4;
 
             let suite = S.suite("test Addresed Chunk Construction", [
               S.test("1", dRouteEvent.eventType : Text, M.equals<Text>(T.text(stableTextField : Text))),
-              S.test("2", Principal.toText(dRouteEvent.source), M.equals(T.text(Principal.toText(TrixTypes.bytesToPrincipal(stableDRouteEvent[1].2))))),
+              S.test("2", Principal.toText(dRouteEvent.source), M.equals(T.text(Principal.toText(TrixTypes.bytesToPrincipal(stableDRouteEvent[stablePrincipalFieldIndex].2))))),
 
-              S.test("3", 2, M.equals<Nat>(T.nat(stableDRouteEvent[2].0))),
-              S.test("4", 0, M.equals(T.nat(stableDRouteEvent[2].1))),
-              S.test("5", dRouteEvent.data.get(0).get(0).toArray(), M.equals(T.array<Nat8>(T.nat8Testable, stableDRouteEvent[2].2))),
+              S.test("3", 4, M.equals<Nat>(T.nat(stableDRouteEvent[dataFieldIndexStart].0))),
+              S.test("4", 0, M.equals(T.nat(stableDRouteEvent[dataFieldIndexStart].1))),
+              S.test("5", dRouteEvent.data.get(0).get(0).toArray(), M.equals(T.array<Nat8>(T.nat8Testable, stableDRouteEvent[dataFieldIndexStart].2))),
 
-              S.test("6", 2, M.equals(T.nat(stableDRouteEvent[3].0))),
-              S.test("7", 1, M.equals(T.nat(stableDRouteEvent[3].1))),
-              S.test("8", dRouteEvent.data.get(0).get(1).toArray(), M.equals(T.array<Nat8>(T.nat8Testable, stableDRouteEvent[3].2))),
+              S.test("6", 4, M.equals(T.nat(stableDRouteEvent[dataFieldIndexStart+1].0))),
+              S.test("7", 1, M.equals(T.nat(stableDRouteEvent[dataFieldIndexStart+1].1))),
+              S.test("8", dRouteEvent.data.get(0).get(1).toArray(), M.equals(T.array<Nat8>(T.nat8Testable, stableDRouteEvent[dataFieldIndexStart+1].2))),
 
-              S.test("9", 3, M.equals(T.nat(stableDRouteEvent[4].0))),
-              S.test("10", 0, M.equals(T.nat(stableDRouteEvent[4].1))),
-              S.test("11", dRouteEvent.data.get(1).get(0).toArray(), M.equals(T.array<Nat8>(T.nat8Testable, stableDRouteEvent[4].2))),
+              S.test("9", 5, M.equals(T.nat(stableDRouteEvent[dataFieldIndexStart+2].0))),
+              S.test("10", 0, M.equals(T.nat(stableDRouteEvent[dataFieldIndexStart+2].1))),
+              S.test("11", dRouteEvent.data.get(1).get(0).toArray(), M.equals(T.array<Nat8>(T.nat8Testable, stableDRouteEvent[dataFieldIndexStart+2].2))),
 
               //entire array should have lenth5
-              S.test("12", true, M.equals(T.bool(stableDRouteEvent.size() == 5)))
+              S.test("12", true, M.equals(T.bool(stableDRouteEvent.size() == 7))),
+
+              //test userid
+              //test droute id
+
+              S.test("drouteid", dRouteEvent.dRouteID : Nat, M.equals<Nat>(T.nat(stableDRouteIDField : Nat))),
+              S.test("userid", dRouteEvent.userID : Nat, M.equals<Nat>(T.nat(stableUserIDField : Nat))),
             ]);
 
             S.run(suite);
+
+            */
 
             return #success;
           } catch(err) {

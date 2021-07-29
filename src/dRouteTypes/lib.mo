@@ -26,7 +26,9 @@ module {
     public type DRouteEvent = {
         eventType : Text;
         source : Principal;
-        data : TrixTypes.Workspace;
+        dataConfig : PipelinifyTypes.DataConfig;
+        dRouteID: Nat;
+        userID: Nat;
     };
 
     //field 0 : name - text
@@ -34,17 +36,25 @@ module {
     //field n-2...data
     public type DRouteEventStable = [TrixTypes.AddressedChunk];
 
+    public type ValidSourceOptions = {
+        #whitelist: [Principal];
+        #blacklist: [Principal];
+        #dynamic: {
+            canister: Text;
+        };
+    };
+
 
     public type EventRegistration = {
-        eventName: Text;
-        var validSources: {
-            #whitelist: [Principal];
-            #blacklist: [Principal];
-            #dynamic: {
-                canister: Text;
-            };
-        };
-        var publishingCanisters: [Principal];
+        eventType: Text;
+        var validSources: ValidSourceOptions;
+        var publishingCanisters: [Text];
+    };
+
+    public type EventRegistrationStable = {
+        eventType: Text;
+        validSources: ValidSourceOptions;
+        publishingCanisters: [Text];
     };
 
     public type NamespaceRight = {
@@ -75,6 +85,7 @@ module {
 
     public type EventPublishable = {
         eventType: Text;
+        userID: Nat;
         dataConfig: PipelinifyTypes.DataConfig;
     };
 
@@ -84,9 +95,10 @@ module {
     };
 
     public type PublishResponse = {
-        id : Nat64;
-        timeProcessed : Int;
+        dRouteID : Nat;
+        timeRecieved : Int;
         status: PublishStatus;
+        publishCanister : Principal.Principal;
     };
 
     public type PublishError = {
@@ -102,6 +114,7 @@ module {
 
     public type RegCanisterActor = actor {
         getPublishingCanisters: (Nat) -> async [Text];
+        getEventRegistration: (Text) -> async ?EventRegistrationStable;
     };
 
     public type PublishingCanisterActor = actor {

@@ -1,15 +1,36 @@
-import dRouteTypes "../drouteTypes/lib";
+import DRouteTypes "../DRouteTypes";
+import DRouteUtilities "../DRouteUtilities";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import HashMap "mo:base/HashMap";
+import Text "mo:base/Text";
+import Debug "mo:base/Debug";
+import List "mo:base/List";
+import Time "mo:base/Time";
 
 
 actor Self{
 
     //Types
-    type EventPublishable = dRouteTypes.EventPublishable;
-    type PublishResponse = dRouteTypes.PublishResponse;
-    type PublishError = dRouteTypes.PublishError;
-    type EventRegistration = dRouteTypes.EventRegistration;
+    type EventPublishable = DRouteTypes.EventPublishable;
+    type PublishResponse = DRouteTypes.PublishResponse;
+    type PublishError = DRouteTypes.PublishError;
+    type EventRegistration = DRouteTypes.EventRegistration;
+    type ValidSourceOptions = DRouteTypes.ValidSourceOptions;
+
+    ///////////////////////////////////
+    // todo: this may need to be in the reg canister and a comprable structure in each publishing canister
+    ///////////////////////////////////
+        stable var upgradeEventRegistration: [DRouteTypes.EventRegistrationStable] = [];
+
+        var registrationStore = HashMap.HashMap<Text, DRouteTypes.EventRegistration>(
+            1,
+            Text.equal,
+            Text.hash
+        );
+    ///////////////////////////////////
+    // /end shared structure
+    ///////////////////////////////////
 
 
     public shared func getPublishingCanisters(instances : Nat) : async [Text] {
@@ -22,16 +43,15 @@ actor Self{
     //keep below chunk seperated to move to a different canister
     ////////////////////////////////////////
 
-    stable var upgradeEventRegistration: [dRouteTypes.EventRegistration] = [];
+    stable var processQueue: List.List<DRouteTypes.DRouteEvent> = List.nil<DRouteTypes.DRouteEvent>();
+    stable var nonce : Nat = 0;
 
-    var registrationStore = HashMap.HashMap<Text, dRouteTypes.EventRegistration>(
-        1,
-        Text.equal,
-        Text.hash
-    );
-
-    func let getEventRegistration(eventType : Text) : ?EventRegistration{
-        //this should query back to the reg canister
+    public func getEventRegistration(eventType : Text) : async ?DRouteTypes.EventRegistrationStable{
+        //this should query back to the reg canister if not in the local store;
+        switch(registrationStore.get(eventType)){
+            case(null){null};
+            case(?registration){?DRouteUtilities.eventRegistrationToStable(registration)};
+        };
     };
 
     public shared(msg) func publish(event : EventPublishable) : async Result.Result<PublishResponse,PublishError> {
@@ -39,31 +59,37 @@ actor Self{
         //todo: check if this is a private canister and/or if the user is authenticated to this shared canister
 
         //confirm registration of the event
-        let eventRegistration = getEventRegistration(event.eventType);
+        let eventRegistration = registrationStore.get(event.eventType);
+        Debug.print("looking for Reg");
         let foundEventRegistration = switch(eventRegistration){
             case(null){
+                Debug.print("reg is null");
                 //this registration does not exist, register it with the defaults
                 let defaultRegistration = {
-                    eventType = event.eventType;
-                    var validSources = #whitelist([msg.sender]);
-                    var publishingCanisters = [Principal.fromActor(Self)];
+                    eventType : Text = event.eventType;
+                    var validSources : ValidSourceOptions = #whitelist([msg.caller]);
+                    var publishingCanisters = [Principal.toText(Principal.fromActor(Self))];
                 };
                 registrationStore.put(event.eventType, defaultRegistration);
 
                 defaultRegistration;
             };
             case(?registration){
-                return registration;
+                registration;
 
             };
         };
+
+        Debug.print("found reg" # debug_show(foundEventRegistration));
 
         //check the principal sending the event against the registration
         var validController = false;
         switch(foundEventRegistration.validSources){
             case(#whitelist(list)){
-                label checkList for(thisItem in list){
-                    if(thisItem == Principal.fromActor(Self)){
+                label checkList for(thisItem in list.vals()){
+                    Debug.print(debug_show(thisItem) # " " #  debug_show(Principal.fromActor(Self)));
+                    if(thisItem == msg.caller){
+                        Debug.print("matches");
                         validController := true;
                         break checkList;
                     };
@@ -84,21 +110,48 @@ actor Self{
 
         //add the event to the queue
 
+        //create an unique id
+        let thisEventID = DRouteUtilities.generateEventID({
+            eventType = event.eventType;
+            source = msg.caller;
+            userID = event.userID;
+            nonce = nonce;});
+        nonce += 1;
+
+        let thisEvent = {
+            eventType = event.eventType;
+            source = msg.caller;
+            userID = event.userID;
+            dRouteID = thisEventID;
+            dataConfig = event.dataConfig;
+            timeRecieved = Time.now();
+        };
+
+        processQueue := List.push(thisEvent, processQueue);
+
+        return #ok({
+            dRouteID = thisEvent.dRouteID;
+            timeRecieved = thisEvent.timeRecieved;
+            status = #recieved;
+            publishCanister = Principal.fromActor(Self);
+        });
+
+
        return #err({code=404;text="Not Implemented"});
     };
 };
 
 /*
-import dRouteTypes "types";
+import DRouteTypes "types";
 import Text "mo:base/Text";
 import Hash "mo:base/Hash";
 import HashMap "mo:base/HashMap";
 
 shared(msg) actor class(){
 
-    stable var upgradeEventRegistration: [dRouteTypes.EventRegistration] = [];
+    stable var upgradeEventRegistration: [DRouteTypes.EventRegistration] = [];
 
-    var registrationStore = HashMap.HashMap<Text, dRouteTypes.EventRegistration>(
+    var registrationStore = HashMap.HashMap<Text, DRouteTypes.EventRegistration>(
         1,
         Text.equal,
         Text.hash
