@@ -5,13 +5,18 @@ type ValidSourceOptions =
    whitelist: vec principal;
  };
 type SubscriptionThrottle = variant {notImplemented;};
-type SubscriptionResponse = record {subscriptionID: nat;};
+type SubscriptionResponse = 
+ record {
+   subscriptionID: nat;
+   userID: nat;
+ };
 type SubscriptionRequest = 
  record {
-   destination: principal;
+   destinationSet: vec principal;
    eventType: text;
    filter: opt SubscriptionFilter;
    throttle: opt SubscriptionThrottle;
+   userID: nat;
  };
 type SubscriptionFilter = variant {notImplemented;};
 type Result__1 = 
@@ -22,7 +27,7 @@ type Result__1 =
 type Result_2 = 
  variant {
    err: PublishError;
-   ok: NotifyResponse;
+   ok: ProcessQueueResponse;
  };
 type Result_1 = 
  variant {
@@ -56,17 +61,17 @@ type PublishError =
    code: nat;
    "text": text;
  };
+type ProcessQueueResponse = 
+ record {
+   eventsProcessed: nat;
+   queueLength: nat;
+ };
 type ProcessError = 
  record {
    code: nat;
    "text": text;
  };
 type Principal = principal;
-type NotifyResponse = 
- variant {
-   err: PublishError;
-   ok: bool;
- };
 type Hash = nat32;
 type EventRegistrationStable = 
  record {

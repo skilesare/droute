@@ -3,6 +3,7 @@
 import C "mo:matchers/Canister";
 import DRouteTypes "../DRouteTypes/lib";
 import Debug "mo:base/Debug";
+import Blob "mo:base/Blob";
 import M "mo:matchers/Matchers";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
@@ -25,7 +26,8 @@ actor Self{
 
 
         let suite = S.suite("test publisher", [
-                    S.test("testSimpleNotify", switch(await testSimpleNotify()){case(#success){true};case(_){false};}, M.equals<Bool>(T.bool(true)))
+                    S.test("testSimpleNotify", switch(await testSimpleNotify()){case(#success){true};case(_){false};}, M.equals<Bool>(T.bool(true))),
+                    S.test("testSubscribe", switch(await testSubscribe()){case(#success){true};case(_){false};}, M.equals<Bool>(T.bool(true)))
                 ]);
         S.run(suite);
 
@@ -90,8 +92,14 @@ actor Self{
 
     };
 
-    public func __dRouteNotify(event: DRouteTypes.DRouteEvent) : async Result.Result<DRouteTypes.NotifyResponse, DRouteTypes.PublishError>{
-        return #err({code=404;text="not implemented droutenotify"})
+    public func __dRouteNotify(event: DRouteTypes.DRouteEvent) : async DRouteTypes.NotifyResponse{
+        recievedEvents.add(event);
+        return #ok(true);
+    };
+
+    public func __dRouteSubValidate(principal : Principal.Principal, userID: Nat) : async (Bool, Blob, DRouteTypes.MerkleTreeWitness){
+
+        return (true, Blob.fromArray([1:Nat8]), #empty);
     };
 
     public shared func testSubscribe() : async {#success; #fail : Text} {
@@ -99,11 +107,12 @@ actor Self{
 
         let dRouteList  = dRouteListener.dRouteListener();
 
-        let eventSub = {
+        let eventSub : DRouteTypes.SubscriptionRequest = {
             eventType = "test123";
-            filter = null;
-            throttle = null;
-            destination = Principal.fromActor(Self);//send notifications to this canister
+            filter : ?DRouteTypes.SubscriptionFilter = null;
+            throttle: ?DRouteTypes.SubscriptionThrottle = null;
+            destinationSet = [Principal.fromActor(Self)];//send notifications to this canister
+            userID = 1;
         };
 
         Debug.print(debug_show(eventSub));
@@ -112,20 +121,29 @@ actor Self{
         let result = await dRouteList.subscribe(eventSub);
 
         let pubCanister : DRouteTypes.PublishingCanisterActor = actor(Principal.toText(dRouteList.regPrincipal));
+
+
         let pubResult = await pubCanister.publish({
             eventType = "test123";
-            userID = 1;
+            userID = 2;
             dataConfig = #dataIncluded{
             data = [(0,0,[1:Nat8,2:Nat8,3:Nat8,4:Nat8])]};
         });
 
+        Debug.print("pubResult " # debug_show(pubResult));
+
 
         let processResult = await pubCanister.processQueue();
+
+        Debug.print("processResult " # debug_show(processResult));
 
 
         //result should now be saved in another var
         var bMessageDelivered : Bool = false;
+
+        Debug.print("recievedevents " # debug_show(recievedEvents.size()));
         for(thisItem in recievedEvents.vals()){
+            Debug.print("an Item " # debug_show(thisItem.eventType) # " " # debug_show(thisItem.userID));
             if(thisItem.eventType == "test123" and thisItem.userID == 2){
                 bMessageDelivered := true;
             }

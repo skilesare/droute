@@ -37,10 +37,12 @@ export interface EventRegistrationStable {
   'eventType' : string,
 }
 export type Hash = number;
-export type NotifyResponse = { 'ok' : boolean } |
-  { 'err' : PublishError };
 export type Principal = Principal;
 export interface ProcessError { 'code' : bigint, 'text' : string }
+export interface ProcessQueueResponse {
+  'queueLength' : bigint,
+  'eventsProcessed' : bigint,
+}
 export interface PublishError { 'code' : bigint, 'text' : string }
 export interface PublishError__1 { 'code' : bigint, 'text' : string }
 export interface PublishResponse {
@@ -55,18 +57,22 @@ export type Result = { 'ok' : SubscriptionResponse } |
   { 'err' : PublishError };
 export type Result_1 = { 'ok' : PublishResponse } |
   { 'err' : PublishError__1 };
-export type Result_2 = { 'ok' : NotifyResponse } |
+export type Result_2 = { 'ok' : ProcessQueueResponse } |
   { 'err' : PublishError };
 export type Result__1 = { 'ok' : ChunkResponse } |
   { 'err' : ProcessError };
 export type SubscriptionFilter = { 'notImplemented' : null };
 export interface SubscriptionRequest {
-  'destination' : Principal,
+  'userID' : bigint,
   'filter' : [] | [SubscriptionFilter],
   'throttle' : [] | [SubscriptionThrottle],
+  'destinationSet' : Array<Principal>,
   'eventType' : string,
 }
-export interface SubscriptionResponse { 'subscriptionID' : bigint }
+export interface SubscriptionResponse {
+  'userID' : bigint,
+  'subscriptionID' : bigint,
+}
 export type SubscriptionThrottle = { 'notImplemented' : null };
 export type ValidSourceOptions = { 'blacklist' : Array<Principal> } |
   { 'whitelist' : Array<Principal> } |

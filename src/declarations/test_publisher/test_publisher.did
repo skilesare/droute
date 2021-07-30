@@ -1,8 +1,18 @@
-type Result__1 = 
+type Witness = 
  variant {
-   err: PublishError;
-   ok: NotifyResponse;
+   "empty";
+   fork: record {
+           Witness;
+           Witness;
+         };
+   labeled: record {
+              Key;
+              Witness;
+            };
+   leaf: Value;
+   pruned: Hash;
  };
+type Value = blob;
 type Result = 
  variant {
    err: ProcessError;
@@ -18,12 +28,29 @@ type ProcessError =
    code: nat;
    "text": text;
  };
+type Principal = principal;
 type NotifyResponse = 
  variant {
    err: PublishError;
    ok: bool;
  };
-type Hash = nat32;
+type MerkleTreeWitness = 
+ variant {
+   "empty";
+   fork: record {
+           Witness;
+           Witness;
+         };
+   labeled: record {
+              Key;
+              Witness;
+            };
+   leaf: Value;
+   pruned: Hash;
+ };
+type Key = blob;
+type Hash__1 = nat32;
+type Hash = blob;
 type DataSource = 
  service {
    queryPipelinifyChunk: (ChunkRequest) -> (Result) query;
@@ -41,7 +68,7 @@ type DataConfig =
               pullQuery;
             };
       sourceActor: opt DataSource;
-      sourceIdentifier: opt Hash;
+      sourceIdentifier: opt Hash__1;
       totalChunks: opt nat32;
     };
    push;
@@ -69,7 +96,7 @@ type ChunkRequest =
  record {
    chunkID: nat;
    event: opt text;
-   sourceIdentifier: opt Hash;
+   sourceIdentifier: opt Hash__1;
  };
 type AddressedChunk = 
  record {
@@ -78,7 +105,8 @@ type AddressedChunk =
    vec nat8;
  };
 service : {
-  __dRouteNotify: (DRouteEvent) -> (Result__1);
+  __dRouteNotify: (DRouteEvent) -> (NotifyResponse);
+  __dRouteSubValidate: (Principal, nat) -> (bool, blob, MerkleTreeWitness);
   test: () -> (variant {
                  fail: text;
                  success;

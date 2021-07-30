@@ -20,8 +20,14 @@ import Array "mo:base/Array";
 import Debug "mo:base/Debug";
 import TrixTypes "../trixTypes/lib";
 import PipelinifyTypes "mo:pipelinify/pipelinify/PipelinifyTypes";
+import MerkleTree "../dRouteUtilities/MerkleTree";
 
 module {
+
+    public type MerkleTree = MerkleTree.Tree;
+    public type MerkleTreeKey = MerkleTree.Key;
+    public type MerkleTreeVal = MerkleTree.Value;
+    public type MerkleTreeWitness = MerkleTree.Witness;
 
     public type DRouteEvent = {
         eventType : Text;
@@ -136,15 +142,33 @@ module {
         eventType : Text;
         filter: ?SubscriptionFilter;
         throttle: ?SubscriptionThrottle;
-        destination: Principal;
+        destinationSet: [Principal];
+        userID: Nat; //hash of namespace to keep from duplicates from occuring
 
+    };
+
+    public type Subscription = {
+
+        eventType : Text;
+        filter: ?SubscriptionFilter;
+        throttle: ?SubscriptionThrottle;
+        destinationSet: [Principal];
+        userID: Nat; //hash of namespace to keep from duplicates from occuring
+        dRouteID: Nat;
+        status: {
+            #started;
+            #stopped;
+        };
+        controllers: [Principal];
     };
 
     public type SubscriptionResponse = {
         subscriptionID: Nat;
+        userID: Nat;
     };
 
     public type NotifyResponse = Result.Result<Bool, PublishError>;
+
     public type ProcessQueueResponse= {
         eventsProcessed: Nat;
         queueLength: Nat;
@@ -163,7 +187,16 @@ module {
 
     public type ListenerCanisterActor = actor {
         __dRouteNotify: (DRouteEvent) -> async Result.Result<NotifyResponse,PublishError>;
+        __dRouteSubValidate: query (Principal, Nat) -> async (Bool, Blob, MerkleTreeWitness);
     };
+
+
+    ////////////////////////
+    //
+    // Errors
+    //
+    // Subscriptions
+    // 1 - No valid destinations in DestinationSet
 
 
 };

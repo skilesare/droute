@@ -241,3 +241,7 @@ Status: Freezer
 
 Status: Completed
 
+32. AA DepDev IWT assign a set of destinations that the system can round robin notification to STI can scale my listeners if necessary.
+
+33. AA DepDev IWT have the system ask me if a subscription is valid before it starts broadcasting STI don't get unwanted messages.
+

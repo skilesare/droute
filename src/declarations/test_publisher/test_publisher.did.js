@@ -1,8 +1,9 @@
 export const idlFactory = ({ IDL }) => {
-  const Hash = IDL.Nat32;
+  const Witness = IDL.Rec();
+  const Hash__1 = IDL.Nat32;
   const AddressedChunk = IDL.Tuple(IDL.Nat, IDL.Nat, IDL.Vec(IDL.Nat8));
   const ChunkRequest = IDL.Record({
-    'sourceIdentifier' : IDL.Opt(Hash),
+    'sourceIdentifier' : IDL.Opt(Hash__1),
     'chunkID' : IDL.Nat,
     'event' : IDL.Opt(IDL.Text),
   });
@@ -21,7 +22,7 @@ export const idlFactory = ({ IDL }) => {
   const DataConfig = IDL.Variant({
     'internal' : IDL.Null,
     'pull' : IDL.Record({
-      'sourceIdentifier' : IDL.Opt(Hash),
+      'sourceIdentifier' : IDL.Opt(Hash__1),
       'data' : IDL.Opt(IDL.Vec(AddressedChunk)),
       'mode' : IDL.Variant({ 'pullQuery' : IDL.Null, 'pull' : IDL.Null }),
       'sourceActor' : IDL.Opt(DataSource),
@@ -39,12 +40,33 @@ export const idlFactory = ({ IDL }) => {
   });
   const PublishError = IDL.Record({ 'code' : IDL.Nat, 'text' : IDL.Text });
   const NotifyResponse = IDL.Variant({ 'ok' : IDL.Bool, 'err' : PublishError });
-  const Result__1 = IDL.Variant({
-    'ok' : NotifyResponse,
-    'err' : PublishError,
+  const Principal = IDL.Principal;
+  const Key = IDL.Vec(IDL.Nat8);
+  const Value = IDL.Vec(IDL.Nat8);
+  const Hash = IDL.Vec(IDL.Nat8);
+  Witness.fill(
+    IDL.Variant({
+      'labeled' : IDL.Tuple(Key, Witness),
+      'fork' : IDL.Tuple(Witness, Witness),
+      'leaf' : Value,
+      'empty' : IDL.Null,
+      'pruned' : Hash,
+    })
+  );
+  const MerkleTreeWitness = IDL.Variant({
+    'labeled' : IDL.Tuple(Key, Witness),
+    'fork' : IDL.Tuple(Witness, Witness),
+    'leaf' : Value,
+    'empty' : IDL.Null,
+    'pruned' : Hash,
   });
   return IDL.Service({
-    '__dRouteNotify' : IDL.Func([DRouteEvent], [Result__1], []),
+    '__dRouteNotify' : IDL.Func([DRouteEvent], [NotifyResponse], []),
+    '__dRouteSubValidate' : IDL.Func(
+        [Principal, IDL.Nat],
+        [IDL.Bool, IDL.Vec(IDL.Nat8), MerkleTreeWitness],
+        [],
+      ),
     'test' : IDL.Func(
         [],
         [IDL.Variant({ 'fail' : IDL.Text, 'success' : IDL.Null })],

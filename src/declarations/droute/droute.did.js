@@ -9,9 +9,15 @@ export const idlFactory = ({ IDL }) => {
     'validSources' : ValidSourceOptions,
     'eventType' : IDL.Text,
   });
+  const ProcessQueueResponse = IDL.Record({
+    'queueLength' : IDL.Nat,
+    'eventsProcessed' : IDL.Nat,
+  });
   const PublishError = IDL.Record({ 'code' : IDL.Nat, 'text' : IDL.Text });
-  const NotifyResponse = IDL.Variant({ 'ok' : IDL.Bool, 'err' : PublishError });
-  const Result_2 = IDL.Variant({ 'ok' : NotifyResponse, 'err' : PublishError });
+  const Result_2 = IDL.Variant({
+    'ok' : ProcessQueueResponse,
+    'err' : PublishError,
+  });
   const Hash = IDL.Nat32;
   const AddressedChunk = IDL.Tuple(IDL.Nat, IDL.Nat, IDL.Vec(IDL.Nat8));
   const ChunkRequest = IDL.Record({
@@ -67,12 +73,16 @@ export const idlFactory = ({ IDL }) => {
   const SubscriptionFilter = IDL.Variant({ 'notImplemented' : IDL.Null });
   const SubscriptionThrottle = IDL.Variant({ 'notImplemented' : IDL.Null });
   const SubscriptionRequest = IDL.Record({
-    'destination' : IDL.Principal,
+    'userID' : IDL.Nat,
     'filter' : IDL.Opt(SubscriptionFilter),
     'throttle' : IDL.Opt(SubscriptionThrottle),
+    'destinationSet' : IDL.Vec(IDL.Principal),
     'eventType' : IDL.Text,
   });
-  const SubscriptionResponse = IDL.Record({ 'subscriptionID' : IDL.Nat });
+  const SubscriptionResponse = IDL.Record({
+    'userID' : IDL.Nat,
+    'subscriptionID' : IDL.Nat,
+  });
   const Result = IDL.Variant({
     'ok' : SubscriptionResponse,
     'err' : PublishError,
