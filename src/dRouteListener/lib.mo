@@ -38,6 +38,8 @@ module {
     public type ConfirmEventRegistrtationResponse = dRouteTypes.ConfirmEventRegistrtationResponse;
     public type RegCanisterActor =  dRouteTypes.RegCanisterActor;
     public type PublishingCanisterActor =  dRouteTypes.PublishingCanisterActor;
+    public type SubscriptionRequest =  dRouteTypes.SubscriptionRequest;
+    public type SubscriptionResponse =  dRouteTypes.SubscriptionResponse;
 
     public class dRouteListener(){
         type Result<T,E> = Result.Result<T,E>;
@@ -46,36 +48,27 @@ module {
             _self;
         };
 
+        public var regPrincipal = Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai");
 
-        public func subscribe(event : EventPublishable) : async Result<PublishResponse, PublishError> {
+
+        public func subscribe(subscription : SubscriptionRequest) : async Result<SubscriptionResponse, PublishError> {
 
             //check to see if we have a set of canisters to send messages to
             let RegCanister : RegCanisterActor = actor(Principal.toText(regPrincipal));
 
-            Debug.print(debug_show(publishingCanisters.size()));
-            if(publishingCanisters.size() == 0){
-                Debug.print("syncing");
-                let sync = await syncRegistration();
-            };
-            Debug.print(debug_show(Int.abs(Time.now())));
-            Debug.print(debug_show(publishingCanisters));
-            let targetCanister = publishingCanisters[Nat.rem(Int.abs(Time.now()), publishingCanisters.size())];
-            //send the message to the pulication canister
+            //todo: for now we need to send to the reg canister, but how scalable is that for subscriptions?
+            let regCanister : RegCanisterActor = actor(Principal.toText(regPrincipal));
+            let subscribeResult = await regCanister.subscribe(subscription);
 
-            let publishingCanister : PublishingCanisterActor = actor(targetCanister);
-
-            let publishResult = await publishingCanister.publish(event);
-
-            switch publishResult{
+            switch subscribeResult{
                 case(#ok(result)){
-                    return publishResult;
+                    return #ok(result);
                 };
                 case(#err(err)){
                     return #err(err);
                 };
             };
 
-            return #err({code=404;text="Not Implemented"});
         };
 
 

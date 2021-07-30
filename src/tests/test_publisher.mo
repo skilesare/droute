@@ -11,6 +11,7 @@ import S "mo:matchers/Suite";
 import T "mo:matchers/Testable";
 import TrixTypes "../TrixTypes/lib";
 import dRouteListener "../dRouteListener";
+import dRoutePublisher "../dRoutePublisher";
 
 actor Self{
 
@@ -53,7 +54,7 @@ actor Self{
 
         let result = await dRoutePub.publish(event);
 
-        let regCanister : dRoutePublisher.RegCanisterActor = actor(Principal.toText(dRoutePub.regPrincipal));
+        let regCanister : DRouteTypes.RegCanisterActor = actor(Principal.toText(dRoutePub.regPrincipal));
         let regResult = await regCanister.getEventRegistration(event.eventType);
 
         switch(result, regResult){
@@ -96,7 +97,7 @@ actor Self{
     public shared func testSubscribe() : async {#success; #fail : Text} {
         Debug.print("running testSubscribe");
 
-        let dRouteListener = dRouteListener.dRouteListener();
+        let dRouteList  = dRouteListener.dRouteListener();
 
         let eventSub = {
             eventType = "test123";
@@ -108,9 +109,9 @@ actor Self{
         Debug.print(debug_show(eventSub));
 
 
-        let result = await dRouteListener.subscribe(dRouteListener);
+        let result = await dRouteList.subscribe(eventSub);
 
-        let pubCanister : dRoutePublisher.PublishingCanisterActor = actor(Principal.toText(dRouteListener.regPrincipal));
+        let pubCanister : DRouteTypes.PublishingCanisterActor = actor(Principal.toText(dRouteList.regPrincipal));
         let pubResult = await pubCanister.publish({
             eventType = "test123";
             userID = 1;
@@ -119,7 +120,7 @@ actor Self{
         });
 
 
-        let processResult = await pubCanister.prcessQueue();
+        let processResult = await pubCanister.processQueue();
 
 
         //result should now be saved in another var
@@ -130,8 +131,8 @@ actor Self{
             }
         };
 
-        switch(result, regResult){
-            case(#ok(result), ?regResult){
+        switch(result, processResult){
+            case(#ok(result), #ok(processResult)){
                 Debug.print("running suite" # debug_show(result));
 
                 let suite = S.suite("test subscribe", [
@@ -150,9 +151,9 @@ actor Self{
                 Debug.print("an error " # debug_show(result));
                 return #fail(err.text);
             };
-            case(_, null){
-                Debug.print("an error registration was null");
-                return #fail("an error registration was null");
+            case(_, #err(err)){
+                Debug.print("an error " # debug_show(err));
+                return #fail("an error process was null");
             };
         };
 

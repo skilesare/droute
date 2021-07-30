@@ -1,4 +1,84 @@
+type Result__1 = 
+ variant {
+   err: PublishError;
+   ok: NotifyResponse;
+ };
+type Result = 
+ variant {
+   err: ProcessError;
+   ok: ChunkResponse;
+ };
+type PublishError = 
+ record {
+   code: nat;
+   "text": text;
+ };
+type ProcessError = 
+ record {
+   code: nat;
+   "text": text;
+ };
+type NotifyResponse = 
+ variant {
+   err: PublishError;
+   ok: bool;
+ };
+type Hash = nat32;
+type DataSource = 
+ service {
+   queryPipelinifyChunk: (ChunkRequest) -> (Result) query;
+   requestPipelinifyChunk: (ChunkRequest) -> (Result);
+ };
+type DataConfig = 
+ variant {
+   dataIncluded: record {data: vec AddressedChunk;};
+   internal;
+   pull:
+    record {
+      data: opt vec AddressedChunk;
+      mode: variant {
+              pull;
+              pullQuery;
+            };
+      sourceActor: opt DataSource;
+      sourceIdentifier: opt Hash;
+      totalChunks: opt nat32;
+    };
+   push;
+ };
+type DRouteEvent = 
+ record {
+   dRouteID: nat;
+   dataConfig: DataConfig;
+   eventType: text;
+   source: principal;
+   userID: nat;
+ };
+type ChunkResponse = 
+ variant {
+   chunk: vec AddressedChunk;
+   eof: vec AddressedChunk;
+   err: ProcessError;
+   parallel: record {
+               nat;
+               nat;
+               vec AddressedChunk;
+             };
+ };
+type ChunkRequest = 
+ record {
+   chunkID: nat;
+   event: opt text;
+   sourceIdentifier: opt Hash;
+ };
+type AddressedChunk = 
+ record {
+   nat;
+   nat;
+   vec nat8;
+ };
 service : {
+  __dRouteNotify: (DRouteEvent) -> (Result__1);
   test: () -> (variant {
                  fail: text;
                  success;
@@ -7,4 +87,8 @@ service : {
                              fail: text;
                              success;
                            });
+  testSubscribe: () -> (variant {
+                          fail: text;
+                          success;
+                        });
 }
