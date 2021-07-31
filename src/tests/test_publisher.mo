@@ -132,10 +132,29 @@ actor Self{
 
         Debug.print("pubResult " # debug_show(pubResult));
 
+        var pendingItems = true;
+        var handbreak = 0;
+        label clearQueue while(pendingItems == true){
+            handbreak +=1;
+            if(handbreak > 1000){
+                return #fail("handbreak overrun");
+            };
+            let processResult = await pubCanister.processQueue();
+            Debug.print("processResult " # debug_show(processResult));
+            switch(processResult){
+                case(#ok(aResult)){
+                    if(aResult.queueLength == 0){
+                        pendingItems := false;
+                    } else {
+                        recievedEvents.clear();
+                    };
+                };
+                case(#err(aErr)){
+                    return #fail(aErr.text);
+                };
+            };
 
-        let processResult = await pubCanister.processQueue();
-
-        Debug.print("processResult " # debug_show(processResult));
+        };
 
 
         //result should now be saved in another var
@@ -149,8 +168,8 @@ actor Self{
             }
         };
 
-        switch(result, processResult){
-            case(#ok(result), #ok(processResult)){
+        switch(result){
+            case(#ok(result)){
                 Debug.print("running suite" # debug_show(result));
 
                 let suite = S.suite("test subscribe", [
@@ -165,14 +184,11 @@ actor Self{
 
                 return #success;
             };
-            case(#err(err), _){
+            case(#err(err)){
                 Debug.print("an error " # debug_show(result));
                 return #fail(err.text);
             };
-            case(_, #err(err)){
-                Debug.print("an error " # debug_show(err));
-                return #fail("an error process was null");
-            };
+
         };
 
 
