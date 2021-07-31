@@ -40,7 +40,7 @@ actor Self{
 
 
     public shared func getPublishingCanisters(instances : Nat) : async [Text] {
-        //todo: need to allocate and produce requested instances. See US 29.
+        //todo: US 29; need to allocate and produce requested instances.
         return [Principal.toText(Principal.fromActor(Self))];
     };
 
@@ -53,15 +53,13 @@ actor Self{
 
     public shared(msg) func subscribe(subInit : DRouteTypes.SubscriptionRequest) : async Result.Result<DRouteTypes.SubscriptionResponse, DRouteTypes.PublishError>{
 
-        //todo:check to see if the subscription qualifies for being added
-
-        //todo: make sure the destination validate are authorized
+        //todo: US 35; check to see if the subscription qualifies for being added - maybe able to use the vali
         let validDestinations = Buffer.Buffer<Principal>(subInit.destinationSet.size());
         for(thisDestination in subInit.destinationSet.vals()){
             let aActor : DRouteTypes.ListenerCanisterActor = actor(Principal.toText(thisDestination));
             let aValidSub: (Bool, Blob, DRouteTypes.MerkleTreeWitness) = await aActor.__dRouteSubValidate(thisDestination, subInit.userID);
             if(aValidSub.0 == true){
-                //todo: verify sub is part of root
+                //todo: US 33; verify sub is part of merkle root
                 validDestinations.add(thisDestination);
             };
         };
@@ -92,7 +90,7 @@ actor Self{
                 destinationSet = validDestinations.toArray();
                 userID = subInit.userID;
                 dRouteID = dRouteID;
-                //todo: handle starting and stopping from request
+                //todo: US 36; handle starting and stopping from request
                 status = #started;
                 controllers = [msg.caller];
             };
@@ -105,7 +103,7 @@ actor Self{
         } else {
             return(#err({code=1;text="No valid destinations in DestinationSet. Deploy destination canisters before subscribing."}))
         };
-        //todo: push the subscription to any publishing canisters for this event
+        //todo: US 30; push the subscription to any publishing canisters for this event
 
         return #err({code=404; text="not implemented subscribe"})
     };
@@ -115,7 +113,7 @@ actor Self{
     //keep below chunk seperated to move to a different canister
     ////////////////////////////////////////
     func broadcastOrder(x : DRouteTypes.Subscription, y :  DRouteTypes.Subscription) : Order.Order{
-        //todo: convert this to staked tokens
+        //todo: US 3; convert this to staked tokens
         if(x.userID > y.userID){
             return #greater;
         } else if (x.userID < y.userID){
@@ -141,7 +139,7 @@ actor Self{
 
     public shared(msg) func publish(event : EventPublishable) : async Result.Result<PublishResponse,PublishError> {
         //make sure that this publisher can publish to this publication canister
-        //todo: check if this is a private canister and/or if the user is authenticated to this shared canister
+        //todo: US 27;28; check if this is a private canister and/or if the user is authenticated to this shared canister
 
         //confirm registration of the event
         let eventRegistration = registrationStore.get(event.eventType);
@@ -226,7 +224,7 @@ actor Self{
     };
 
     public func processQueue() : async Result.Result<DRouteTypes.ProcessQueueResponse, DRouteTypes.PublishError>{
-        //todo: see if there are events in the queue - we always get the first event
+        //see if there are events in the queue - we always get the first event
         var thisEvent : ?DRouteTypes.DRouteEvent = List.last<DRouteTypes.DRouteEvent>(pendingQueue);
         switch(thisEvent){
             case(null){
@@ -239,12 +237,11 @@ actor Self{
                     case(null){
                         //there is nothing in the heap, lets fill it up
 
-                        //todo: see if there are subscriptions
-
-                        //todo: the following function should apply any filters and throttles
-                        //todo: create a heap of subscription calls
+                        //see if there are subscriptions
+                        //todo: US 21; the following function should apply any filters and throttles
+                        //create a heap of subscription calls
                         let heapResult = buildSubscriptionsHeap(thisEvent.eventType);
-                        //todo: handle what to do if there are too many subscriptions
+                        //todo: US 34; handle what to do if there are too many subscriptions
                         pendingHeap := heapResult;
 
                         pendingHeap;
@@ -294,7 +291,7 @@ actor Self{
                             };
 
                             itemsProcessed += 1;
-                            //todo figure out handbreak
+                            //todo: US34; figure out handbreak
                             if(itemsProcessed > 10000){
                                 break doHeap;
                             };
@@ -303,7 +300,8 @@ actor Self{
                         };
 
                         //take the last item off the pending eventlist
-                        //todo: if we haven't fiished then we need to save the event the heap is currenlty processing
+                        //todo: US34 if we haven't fiished then we need to save the event the heap is currenlty processing
+                        //remove item from the processing queue
                         pendingQueue := List.take<DRouteTypes.DRouteEvent>(pendingQueue, List.size<DRouteTypes.DRouteEvent>(pendingQueue)-1);
 
                         return #ok({
@@ -319,7 +317,7 @@ actor Self{
 
 
         //loop through pending heap and send messages.
-        //remove item from the processing queue
+
         return #err({code=404; text="not implemented subscribe"})
     };
 

@@ -75,11 +75,19 @@ The system should dynamically create and move canisters assignments to distribut
 The dRoute libraries should shield the AppDev and DepDev from most of the complexity of the dRoute system.
 
 
+# Current Priorities
+
+1. Basic Reporting <- You are here
+2. Encryption of data
+3. Certification of subscriptions
+4. Distribution of processing canisters
+5. Staking
+
 # User Stories
 
 1. AA AppDev IWT notify other apps of events that have ocurred during the processing of my application STI increase the network effects of my application.
 
-Status: Pending 2
+Status: Pending 11
 
 Notes:
 
@@ -145,18 +153,14 @@ Status: Pending 1C
 
 1C. AA Service IWT have my registration be scalable STI can handle more than 2GB of registrations
 
-2. AA DepDev IWT subscribe to events of another app STI can trigger processing in my app based on that information.
 
-Status: Started
-
-
-3. AA DepDev User IWT stake my tokens in dRoute STI can get notification priority.
+3. [stake] AA DepDev User IWT stake my tokens in dRoute STI can get notification priority.
 
 
-4. AA DepDev User IWT see where my stake ranks in relation to other dRoute stakers STI can make decisions about my stake.
+4. [stake] AA DepDev User IWT see where my stake ranks in relation to other dRoute stakers STI can make decisions about my stake.
 
 
-5. AA DepDev User IWT have my stake be reliable and maintainable STI don't have to pay attention to it.
+5. [stake] AA DepDev User IWT have my stake be reliable and maintainable STI don't have to pay attention to it.
 
 
 6. AA AppUser IWT never have to think about nISP or dRoute STI have a clean user experience.
@@ -171,10 +175,12 @@ Status: Started
 9. AA DepDev IWT be assured that no messages are missed STI don't miss information.
 
 
-10. AA DepDev IWT what I pay for message delivery to be predictable STI am not surprised by unexpected expenses.
+10. AA DepDev IWT have what I pay for message delivery to be predictable STI am not surprised by unexpected expenses.
 
 
 11. AA AppDev ITW know who is using my event notifications STI can understand the importance of my application.
+
+Status: Started
 
 
 12. AA AppDev IWT encrypt my event information STI keep my users information safely.
@@ -198,15 +204,7 @@ Status: Started
 18. AA Service IWT distribute my processing STI can handle a large volume of calls.
 
 
-19. AA DepDev IWT have the option to have events pushed to me by dRoute STI can handle them automatically.
-
-
-20. AA DepDev IWT have the option to have events queue up STI can handle them at my own pace.
-
-Status: Freezer - I think we can handle this with just an event processing canister and the only thing a user has to do is to point the subscription to their processing canisters
-
-
-21. AA DepDev IWT bto filter out events based on their metadata content STI don't get bombarded by events that I don't care about.
+21. AA DepDev IWT  filter out events based on their metadata content STI don't get bombarded by events that I don't care about.
 
 
 22. AA AppDev IWT keep track of my dRoute canisters STI can manage the cycles needed to run it.
@@ -215,7 +213,7 @@ Status: Freezer - I think we can handle this with just an event processing canis
 23. AA AppDev IWT give access to my dRout canisters to someone else STI can have them manage the cycles in my canisters.
 
 
-24. AA AppDev IWT recover the cost of notifying DepDevs of events from my dRout canisters STI can control expenses.
+24. AA AppDev IWT recover the cost of notifying DepDevs of events from my dRoute canisters STI can control expenses.
 
 
 25. AA DepDev IWT throttle the incoming messages STI don't over spend on cycles.
@@ -237,11 +235,35 @@ Status: Freezer
 
 30. AA Service IWT distribute relevant registrations to assigned publishing canisters STI don't require a query call back to the main canister for registration info.
 
-31. AA AppDev IWT assign a discoverable ID to my events STI can find them later.
-
-Status: Completed
 
 32. AA DepDev IWT assign a set of destinations that the system can round robin notification to STI can scale my listeners if necessary.
 
 33. AA DepDev IWT have the system ask me if a subscription is valid before it starts broadcasting STI don't get unwanted messages.
 
+34. AA Service IWT chunk broadcasts STI don't overrun the cycle limit.
+
+35. AA AppDev IWT limit who can subscribe to my events STI maintain privacy.
+
+36. AA DepDev IWT have the option to have my subscription measured in start/stoped mode STI can register my sub without immediately getting blasted with events incase I need to do further config.
+
+37. AA AppDev IWT query the service for my eventID or eventUserID and get back a report on how that event was handled STI can audit my application
+
+# Completed user stories
+
+2. AA DepDev IWT subscribe to events of another app STI can trigger processing in my app based on that information.
+
+Status: Completed
+
+19. AA DepDev IWT have the option to have events pushed to me by dRoute STI can handle them automatically.
+
+Status: Completed
+
+31. AA AppDev IWT assign a discoverable ID to my events STI can find them later.
+
+Status: Completed
+
+# Discarded user stories
+
+20. AA DepDev IWT have the option to have events queue up STI can handle them at my own pace.
+
+Status: Discarded - I think we can handle this with just an event processing canister and the only thing a user has to do is to point the subscription to their processing canisters

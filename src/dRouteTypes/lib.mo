@@ -59,7 +59,7 @@ module {
         };
     };
 
-
+    //todo: US 35; add valid targets
     public type EventRegistration = {
         eventType: Text;
         var validSources: ValidSourceOptions;
