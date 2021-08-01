@@ -77,11 +77,11 @@ The dRoute libraries should shield the AppDev and DepDev from most of the comple
 
 # Current Priorities
 
-1. Basic Reporting <- You are here
-2. Encryption of data
-3. Certification of subscriptions
-4. Distribution of processing canisters
-5. Staking
+x. Basic Reporting
+1. Encryption of data <- You are here
+2. Certification of subscriptions
+3. Distribution of processing canisters
+4. Staking
 
 # User Stories
 
@@ -178,11 +178,6 @@ Status: Pending 1C
 10. AA DepDev IWT have what I pay for message delivery to be predictable STI am not surprised by unexpected expenses.
 
 
-11. AA AppDev ITW know who is using my event notifications STI can understand the importance of my application.
-
-Status: Started
-
-
 12. AA AppDev IWT encrypt my event information STI keep my users information safely.
 
 
@@ -246,11 +241,7 @@ Status: Freezer
 
 36. AA DepDev IWT have the option to have my subscription measured in start/stoped mode STI can register my sub without immediately getting blasted with events incase I need to do further config.
 
-37. AA AppDev IWT query the service for my eventID or eventUserID and get back a report on how that event was handled STI can audit my application.
 
-Status: Started
-
-38. AA DepDev IWT query the service for my subscriptionID or subscriptionUserID and get back a report on how that subscription was handled STI can audit my application
 
 
 # Completed user stories
@@ -259,11 +250,25 @@ Status: Started
 
 Status: Completed
 
+11. AA AppDev ITW know who is using my event notifications STI can understand the importance of my application.
+
+Status: Completed
+
+Notes:  AppDevs can query the Broadcast logs to see where their events are going
+
 19. AA DepDev IWT have the option to have events pushed to me by dRoute STI can handle them automatically.
 
 Status: Completed
 
 31. AA AppDev IWT assign a discoverable ID to my events STI can find them later.
+
+Status: Completed
+
+37. AA AppDev IWT query the service for my eventID or eventUserID and get back a report on how that event was handled STI can audit my application.
+
+Status: Completed
+
+38. AA DepDev IWT query the service for my subscriptionID or subscriptionUserID and get back a report on how that subscription was handled STI can audit my application
 
 Status: Completed
 
