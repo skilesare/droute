@@ -250,6 +250,9 @@ Status: Freezer
 
 Status: Started
 
+38. AA DepDev IWT query the service for my subscriptionID or subscriptionUserID and get back a report on how that subscription was handled STI can audit my application
+
+
 # Completed user stories
 
 2. AA DepDev IWT subscribe to events of another app STI can trigger processing in my app based on that information.

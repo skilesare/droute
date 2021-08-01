@@ -59,7 +59,21 @@ metatree.readFilterPage("com.test.log", ?minID, ?maxID, lastID, lastMarker)
 }
 
 metatree.write("com.test.log", primaryID, AddressedChunkArray);
+metatree.writeAndIndex("com.test.log", primaryID,AddressedChunkArray, index : [{ namespace: Text; dataZone: Nat; dataChunk: Nat; type: {#Nat;Nat32; etc}}}])
 metatree.manageNamespace({
+  #addSimpleIndex: [{
+    namespace: Text;
+    dataZone: Nat;
+    dataChunk: Nat;
+    type : {
+      #Nat;
+      #Nat32;
+      #Int;
+      #Nat8;
+      #Text;
+      #dynamic: Principal //will query the principal on __metatreeCalcIndexNamespace;
+    }
+  }]
   #reserve: {
     namespace : Text
   };

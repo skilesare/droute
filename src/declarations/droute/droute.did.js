@@ -107,6 +107,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'getProcessingLogs' : IDL.Func([IDL.Text], [ReadResponse], []),
+    'getProcessingLogsByIndex' : IDL.Func(
+        [IDL.Text, IDL.Nat],
+        [ReadResponse],
+        [],
+      ),
     'getPublishingCanisters' : IDL.Func([IDL.Nat], [IDL.Vec(IDL.Text)], []),
     'processQueue' : IDL.Func([], [Result_2], []),
     'publish' : IDL.Func([EventPublishable], [Result_1], []),

@@ -43,6 +43,13 @@ actor class DRoute() = this {
 
     var metatree = MetaTree.MetaTree(#local);
 
+    var broadcastLogItemIndex : [MetaTree.MetaTreeIndex] = [
+        {namespace = "com.dRoute.eventbroadcast.__eventDRouteID"; dataZone=3; dataChunk=0; indexType = #Nat;},
+        {namespace = "com.dRoute.eventbroadcast.__eventUserID"; dataZone=4; dataChunk=0; indexType = #Nat;},
+        {namespace = "com.dRoute.eventbroadcast.__subscriptionDRouteID"; dataZone=8; dataChunk=0; indexType = #Nat;},
+        {namespace = "com.dRoute.eventbroadcast.__subscriptionUserID"; dataZone=7; dataChunk=0; indexType = #Nat;}
+    ];
+
 
     public shared func getPublishingCanisters(instances : Nat) : async [Text] {
         //todo: US 29; need to allocate and produce requested instances.
@@ -333,9 +340,10 @@ actor class DRoute() = this {
 
                                     //not awiting this at this point
                                     Debug.print("writing to metatree " # debug_show(aLogItem));
-                                    let marker = metatree.write("com.droute.eventbroadcast." # thisEvent.eventType,
+                                    let marker = metatree.writeAndIndex("com.dRoute.eventbroadcast." # thisEvent.eventType,
                                         Int.abs(Time.now()),
-                                        DRouteUtilities.serializeBroadcastLogItem(aLogItem));
+                                        DRouteUtilities.serializeBroadcastLogItem(aLogItem),
+                                        broadcastLogItemIndex);
 
 
                                 };
@@ -392,8 +400,14 @@ actor class DRoute() = this {
 
 
     public shared func getProcessingLogs(eventType : Text) : async MetaTree.ReadResponse {
-        return await metatree.read("com.droute.eventbroadcast." # eventType);
+        return await metatree.read("com.dRoute.eventbroadcast." # eventType);
     };
+
+    public shared func getProcessingLogsByIndex(index: Text, item : Nat) : async MetaTree.ReadResponse {
+        return await metatree.read("com.dRoute.eventbroadcast." # index # ".__index." # Nat.toText(item));
+    };
+
+
 
     system func preupgrade() {
 

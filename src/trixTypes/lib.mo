@@ -392,6 +392,16 @@ module {
         return size;
     };
 
+    public func getDataChunkFromAddressedChunkArray(item : AddressedChunkArray, dataZone: Nat, dataChunk: Nat) : [Nat8]{
+        var size : Nat = 0;
+        for(thisItem in item.vals()){
+            if(thisItem.0 == dataZone and thisItem.1 == dataChunk){
+                return thisItem.2;
+            }
+        };
+        return [];
+    };
+
 
 
 };

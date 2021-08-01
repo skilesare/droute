@@ -200,6 +200,7 @@ module {
 
         //todo: this probably doesnt go here figure out where metatree should go
         getProcessingLogs: (Text) -> async MetaTree.ReadResponse;
+        getProcessingLogsByIndex: (Text, Nat) -> async MetaTree.ReadResponse;
     };
 
     public type ListenerCanisterActor = actor {

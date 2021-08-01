@@ -123,6 +123,7 @@ type DRoute =
  service {
    getEventRegistration: (text) -> (opt EventRegistrationStable);
    getProcessingLogs: (text) -> (ReadResponse);
+   getProcessingLogsByIndex: (text, nat) -> (ReadResponse);
    getPublishingCanisters: (nat) -> (vec text);
    processQueue: () -> (Result_2);
    publish: (EventPublishable) -> (Result_1);

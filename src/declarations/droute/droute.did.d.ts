@@ -15,6 +15,9 @@ export interface DRoute {
       [] | [EventRegistrationStable]
     >,
   'getProcessingLogs' : (arg_0: string) => Promise<ReadResponse>,
+  'getProcessingLogsByIndex' : (arg_0: string, arg_1: bigint) => Promise<
+      ReadResponse
+    >,
   'getPublishingCanisters' : (arg_0: bigint) => Promise<Array<string>>,
   'processQueue' : () => Promise<Result_2>,
   'publish' : (arg_0: EventPublishable) => Promise<Result_1>,

@@ -13,6 +13,7 @@ import Hash "mo:base/Hash";
 import List "mo:base/List";
 import Nat "mo:base/Nat";
 import Nat32 "mo:base/Nat32";
+import Int "mo:base/Int";
 
 import Buffer "mo:base/Buffer";
 
@@ -44,6 +45,18 @@ module {
         #local;
     };
 
+    public type MetaTreeIndex = {
+        namespace : Text;
+        dataZone: Nat;
+        dataChunk: Nat;
+        indexType: {
+            #Nat;
+            #Text;
+            #Int;
+            #Dyanamic : Principal;
+        };
+    };
+
 
     public class MetaTree(config: MetaTreeConfig){
 
@@ -65,17 +78,17 @@ module {
             let currentList : ?[Entry] = namespaceMap.get(namespaceHash);
             switch(currentList){
                 case(null){
-                    //Debug.print("no list for namespace " # namespace);
+                    Debug.print("no list for namespace " # namespace);
                     namespaceMap.put(namespaceHash, [{primaryID = primaryID; marker = marker; data = data}]);
                 };
                 case(?currentList){
-                    //Debug.print("found list for namespace " # namespace # " " #  debug_show(currentList.size()));
+                    Debug.print("found list for namespace " # namespace # " " #  debug_show(currentList.size()));
                     var bIn = false;
                     let currentListSize = currentList.size();
                     //todo: test inserting in the middle of the list.
                     let newArray = Array.tabulate<Entry>(currentListSize + 1, func(idx){
                         if(bIn == false){
-                            //Debug.print("bIn is false");
+                            Debug.print("bIn is false");
 
                             if(idx < currentListSize and (primaryID > currentList[idx].primaryID or (primaryID == currentList[idx].primaryID and marker > currentList[idx].marker))){
                                 //Debug.print("keeping the same" # debug_show(idx));
@@ -96,7 +109,7 @@ module {
                             return currentList[idx - 1];
                         };
                     });
-                    //Debug.print("inserting new array" # debug_show(newArray.size()));
+                    Debug.print("inserting new array" # debug_show(newArray.size()));
                     namespaceMap.put(namespaceHash, newArray);
                 };
             };
@@ -104,6 +117,57 @@ module {
             return marker;
 
         };
+
+
+        public func writeAndIndex(namespace : Text, primaryID : Nat, data: AddressedChunkArray, index: [MetaTreeIndex]) : async Nat{
+            //todo: write to metatree service
+            let marker  = await write(namespace, primaryID, data);
+            Debug.print(
+                "wrote initial item to log...now doing index"
+            );
+
+            for(thisIndex in index.vals()){
+                Debug.print(debug_show(thisIndex));
+                let metaData = calcIndexMeta(thisIndex, data);
+                let newNamespace = thisIndex.namespace # ".__index." # metaData.postFix;
+                //not currently awaiting the markers.
+                let aMarker = write(newNamespace, metaData.primaryID, data);
+            };
+            return marker;
+
+        };
+
+        func calcIndexMeta(index : MetaTreeIndex, data : AddressedChunkArray) : {primaryID : Nat; postFix : Text} {
+
+            let meta = switch(index.indexType){
+                case(#Nat){
+                    let n = TrixTypes.bytesToNat(TrixTypes.getDataChunkFromAddressedChunkArray(data, index.dataZone, index.dataChunk));
+                    {postFix = Nat.toText(n);
+                     primaryID = n
+                    };
+                };
+                case(#Int){
+                    //todo: does not support negative ints. Maybe add a billionty to private id?
+                    let n = TrixTypes.bytesToInt(TrixTypes.getDataChunkFromAddressedChunkArray(data, index.dataZone, index.dataChunk));
+
+                    {postFix = Int.toText(n);
+                    primaryID = Int.abs(n)};
+                };
+                case(#Text){
+                    let n = SHA256.sha256(TrixTypes.getDataChunkFromAddressedChunkArray(data, index.dataZone, index.dataChunk));
+                    {postFix = TrixTypes.bytesToText(n);
+                    primaryID = TrixTypes.bytesToNat(n)};
+                };
+                case(_){
+                    {postFix="Not Implemented";
+                    primaryID=0};
+                };
+            };
+
+            return meta;
+        };
+
+
         var maxchunkSize : Nat = 2_000_000;
 
 
@@ -123,13 +187,13 @@ module {
         public func readFilterPage(namespace : Text, minID : ?Nat, maxID : ?Nat, lastID : Nat, lastMarker: Nat) : async ReadResponse {
 
             let namespaceHash = TrixTypes.bytesToNat(SHA256.sha256(TrixTypes.textToBytes(namespace)));
-            //Debug.print("getting logs for has " # debug_show(namespaceHash));
+            Debug.print("getting logs for hash " # debug_show(namespaceHash) # " " # namespace);
 
             let currentList : ?[Entry] = namespaceMap.get(namespaceHash);
             //Debug.print("found a List");
             switch(currentList){
                 case(null){
-                    //Debug.print("no logs");
+                    Debug.print("no logs");
                     return {
                         data = [];
                         lastID = null;
@@ -151,7 +215,7 @@ module {
                     switch(minID, maxID){
                         case(null, null){
                             //no filter
-                            //Debug.print("no filter" # debug_show(currentList.size()));
+                            Debug.print("no filter" # debug_show(currentList.size()));
                             label buildResponse for(thisEntry in currentList.vals()){
                                 //Debug.print(debug_show(lastID) # " " # debug_show(lastMarker) # " " # debug_show(thisEntry.primaryID) # " " # debug_show(thisEntry.marker));
                                 if(thisEntry.primaryID >= lastID and thisEntry.marker > lastMarker){
