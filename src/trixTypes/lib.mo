@@ -6,12 +6,12 @@ This code is released for code verification purposes. All rights are retained by
 */
 ///////////////////////////////
 
-import String "mo:base/Text";
 import Text "mo:base/Text";
 import Result "mo:base/Result";
 import Principal "mo:base/Principal";
 import Hash "mo:base/Hash";
 import List "mo:base/List";
+import Int "mo:base/Int";
 import Nat "mo:base/Nat";
 import Nat8 "mo:base/Nat8";
 import Nat32 "mo:base/Nat32";
@@ -136,6 +136,54 @@ module {
     //todo: this should go to Blob once they add Principal.fromBlob
     public func bytesToPrincipal(_bytes: [Nat8]) : Principal.Principal{
         return Principal.fromText(bytesToText(_bytes));
+    };
+
+    public func boolToBytes(_bool : Bool) : [Nat8]{
+        if(_bool == true){
+            return [1:Nat8];
+        } else {
+            return [0:Nat8];
+        };
+    };
+
+    public func bytesToBool(_bytes : [Nat8]) : Bool{
+        if(_bytes[0] == 0){
+            return false;
+        } else {
+            return true;
+        };
+    };
+
+    public func intToBytes(n : Int) : [Nat8]{
+        var a : Nat8 = 0;
+        var c : Nat8 = if(n < 0){1}else{0};
+        var b : Nat = Int.abs(n);
+        var bytes = List.nil<Nat8>();
+        var test = true;
+        while test {
+            a := Nat8.fromNat(b % 256);
+            b := b / 256;
+            bytes := List.push<Nat8>(a, bytes);
+            test := b > 0;
+        };
+
+        Array.append<Nat8>([c],List.toArray<Nat8>(bytes));
+    };
+
+    public func bytesToInt(_bytes : [Nat8]) : Int{
+        var n : Int = 0;
+        var i = 0;
+        let natBytes = Array.tabulate<Nat8>(_bytes.size() - 2, func(idx){_bytes[idx+1]});
+
+        Array.foldRight<Nat8, ()>(natBytes, (), func (byte, _) {
+            n += Nat8.toNat(byte) * 256 ** i;
+            i += 1;
+            return;
+        });
+        if(_bytes[0]==1){
+            n *= -1;
+        };
+        return n;
     };
 
     public func countAddressedChunksInWorkspace(x : Workspace) : Nat{
@@ -334,6 +382,14 @@ module {
         };
         //todo: throw error
         return (#eof, resultBuffer);
+    };
+
+    public func getAddressedChunkArraySize(item : AddressedChunkArray) : Nat{
+        var size : Nat = 0;
+        for(thisItem in item.vals()){
+            size += thisItem.2.size() + 4 + 4; //todo: only works for up to 32 byte adresess...should be fine but verify and document.
+        };
+        return size;
     };
 
 

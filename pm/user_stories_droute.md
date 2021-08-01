@@ -246,7 +246,9 @@ Status: Freezer
 
 36. AA DepDev IWT have the option to have my subscription measured in start/stoped mode STI can register my sub without immediately getting blasted with events incase I need to do further config.
 
-37. AA AppDev IWT query the service for my eventID or eventUserID and get back a report on how that event was handled STI can audit my application
+37. AA AppDev IWT query the service for my eventID or eventUserID and get back a report on how that event was handled STI can audit my application.
+
+Status: Started
 
 # Completed user stories
 

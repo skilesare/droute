@@ -9,6 +9,19 @@ export const idlFactory = ({ IDL }) => {
     'validSources' : ValidSourceOptions,
     'eventType' : IDL.Text,
   });
+  const AddressedChunkArray = IDL.Vec(
+    IDL.Tuple(IDL.Nat, IDL.Nat, IDL.Vec(IDL.Nat8))
+  );
+  const Entry = IDL.Record({
+    'data' : AddressedChunkArray,
+    'primaryID' : IDL.Nat,
+    'marker' : IDL.Nat,
+  });
+  const ReadResponse = IDL.Record({
+    'data' : IDL.Vec(Entry),
+    'lastID' : IDL.Opt(IDL.Nat),
+    'lastMarker' : IDL.Opt(IDL.Nat),
+  });
   const ProcessQueueResponse = IDL.Record({
     'queueLength' : IDL.Nat,
     'eventsProcessed' : IDL.Nat,
@@ -87,16 +100,18 @@ export const idlFactory = ({ IDL }) => {
     'ok' : SubscriptionResponse,
     'err' : PublishError,
   });
-  return IDL.Service({
+  const DRoute = IDL.Service({
     'getEventRegistration' : IDL.Func(
         [IDL.Text],
         [IDL.Opt(EventRegistrationStable)],
         [],
       ),
+    'getProcessingLogs' : IDL.Func([IDL.Text], [ReadResponse], []),
     'getPublishingCanisters' : IDL.Func([IDL.Nat], [IDL.Vec(IDL.Text)], []),
     'processQueue' : IDL.Func([], [Result_2], []),
     'publish' : IDL.Func([EventPublishable], [Result_1], []),
     'subscribe' : IDL.Func([SubscriptionRequest], [Result], []),
   });
+  return DRoute;
 };
 export const init = ({ IDL }) => { return []; };

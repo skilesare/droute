@@ -6,21 +6,22 @@ This code is released for code verification purposes. All rights are retained by
 */
 ///////////////////////////////
 
-import String "mo:base/Text";
-import Text "mo:base/Text";
-import Result "mo:base/Result";
-import Principal "mo:base/Principal";
-import Hash "mo:base/Hash";
-import Nat8 "mo:base/Nat8";
-import Nat32 "mo:base/Nat32";
-import Nat16 "mo:base/Nat16";
-import Buffer "mo:base/Buffer";
-import Iter "mo:base/Iter";
 import Array "mo:base/Array";
+import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
-import TrixTypes "../trixTypes/lib";
-import PipelinifyTypes "mo:pipelinify/pipelinify/PipelinifyTypes";
+import Hash "mo:base/Hash";
+import Iter "mo:base/Iter";
 import MerkleTree "../dRouteUtilities/MerkleTree";
+import MetaTree "../metatree/lib";
+import Nat16 "mo:base/Nat16";
+import Nat32 "mo:base/Nat32";
+import Nat8 "mo:base/Nat8";
+import PipelinifyTypes "mo:pipelinify/pipelinify/PipelinifyTypes";
+import Principal "mo:base/Principal";
+import Result "mo:base/Result";
+import Text "mo:base/Text";
+import TrixTypes "../trixTypes";
+
 
 module {
 
@@ -95,8 +96,21 @@ module {
     };
 
 
+    public type BroadcastLogItem = {
+        eventType: Text;
+        eventDRouteID: Nat;
+        eventUserID: Nat;
+        destination: Principal;
+        processor: Principal;
+        subscriptionUserID: Nat;
+        subscriptionDRoutID: Nat;
+        dateSent: Int;
+        notifyResponse: Bool;
+        heapCycleID: Nat;
+        index: Nat;
 
-
+        error: ?PublishError;
+    };
 
     public type EventPublishable = {
         eventType: Text;
@@ -183,10 +197,13 @@ module {
     public type PublishingCanisterActor = actor {
         publish: (EventPublishable) -> async Result.Result<PublishResponse,PublishError>;
         processQueue: () -> async Result.Result<ProcessQueueResponse, PublishError>;
+
+        //todo: this probably doesnt go here figure out where metatree should go
+        getProcessingLogs: (Text) -> async MetaTree.ReadResponse;
     };
 
     public type ListenerCanisterActor = actor {
-        __dRouteNotify: (DRouteEvent) -> async Result.Result<NotifyResponse,PublishError>;
+        __dRouteNotify: (DRouteEvent) -> async NotifyResponse;
         __dRouteSubValidate: query (Principal, Nat) -> async (Bool, Blob, MerkleTreeWitness);
     };
 

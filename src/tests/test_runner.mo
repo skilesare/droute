@@ -3,14 +3,22 @@ import C "mo:matchers/Canister";
 import M "mo:matchers/Matchers";
 import T "mo:matchers/Testable";
 import Debug "mo:base/Debug";
-import RegCanister "canister:droute";
-import UtilityTestCanister "canister:test_runner_droute_utilities";
-import PublisherTestCanister "canister:test_publisher";
 import DRouteTypes "../dRouteTypes";
 import DRouteUtilities "../dRouteUtilities";
 
+import RegCanisterDef "../droute/main";
+import UtilityTestCanisterDef "test_runner_droute_utilities";
+import PublisherTestCanisterDef "test_publisher";
+
+
 actor {
     let it = C.Tester({ batchSize = 8 });
+
+    //this is annoying, but it is gets around the "not defined bug";
+    let RegCanister : RegCanisterDef.DRoute = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
+    let UtilityTestCanister : UtilityTestCanisterDef.test_runner_droute_utilities = actor("rrkah-fqaaa-aaaaa-aaaaq-cai");
+    let PublisherTestCanister : PublisherTestCanisterDef.test_publisher = actor("renrk-eyaaa-aaaaa-aaada-cai");
+
     public shared func test() : async Text {
 
 

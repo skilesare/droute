@@ -1,5 +1,6 @@
 import type { Principal } from '@dfinity/principal';
 export type AddressedChunk = [bigint, bigint, Array<number>];
+export type AddressedChunkArray = Array<[bigint, bigint, Array<number>]>;
 export interface ChunkRequest {
   'sourceIdentifier' : [] | [Hash],
   'chunkID' : bigint,
@@ -9,6 +10,16 @@ export type ChunkResponse = { 'eof' : Array<AddressedChunk> } |
   { 'err' : ProcessError } |
   { 'chunk' : Array<AddressedChunk> } |
   { 'parallel' : [bigint, bigint, Array<AddressedChunk>] };
+export interface DRoute {
+  'getEventRegistration' : (arg_0: string) => Promise<
+      [] | [EventRegistrationStable]
+    >,
+  'getProcessingLogs' : (arg_0: string) => Promise<ReadResponse>,
+  'getPublishingCanisters' : (arg_0: bigint) => Promise<Array<string>>,
+  'processQueue' : () => Promise<Result_2>,
+  'publish' : (arg_0: EventPublishable) => Promise<Result_1>,
+  'subscribe' : (arg_0: SubscriptionRequest) => Promise<Result>,
+}
 export type DataConfig = { 'internal' : null } |
   {
     'pull' : {
@@ -25,6 +36,11 @@ export type DataConfig = { 'internal' : null } |
 export interface DataSource {
   'queryPipelinifyChunk' : (arg_0: ChunkRequest) => Promise<Result__1>,
   'requestPipelinifyChunk' : (arg_0: ChunkRequest) => Promise<Result__1>,
+}
+export interface Entry {
+  'data' : AddressedChunkArray,
+  'primaryID' : bigint,
+  'marker' : bigint,
 }
 export interface EventPublishable {
   'userID' : bigint,
@@ -53,6 +69,11 @@ export interface PublishResponse {
 }
 export type PublishStatus = { 'recieved' : null } |
   { 'delivered' : null };
+export interface ReadResponse {
+  'data' : Array<Entry>,
+  'lastID' : [] | [bigint],
+  'lastMarker' : [] | [bigint],
+}
 export type Result = { 'ok' : SubscriptionResponse } |
   { 'err' : PublishError };
 export type Result_1 = { 'ok' : PublishResponse } |
@@ -77,12 +98,4 @@ export type SubscriptionThrottle = { 'notImplemented' : null };
 export type ValidSourceOptions = { 'blacklist' : Array<Principal> } |
   { 'whitelist' : Array<Principal> } |
   { 'dynamic' : { 'canister' : string } };
-export interface _SERVICE {
-  'getEventRegistration' : (arg_0: string) => Promise<
-      [] | [EventRegistrationStable]
-    >,
-  'getPublishingCanisters' : (arg_0: bigint) => Promise<Array<string>>,
-  'processQueue' : () => Promise<Result_2>,
-  'publish' : (arg_0: EventPublishable) => Promise<Result_1>,
-  'subscribe' : (arg_0: SubscriptionRequest) => Promise<Result>,
-}
+export interface _SERVICE extends DRoute {}

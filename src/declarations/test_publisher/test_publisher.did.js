@@ -60,7 +60,7 @@ export const idlFactory = ({ IDL }) => {
     'empty' : IDL.Null,
     'pruned' : Hash,
   });
-  return IDL.Service({
+  const test_publisher = IDL.Service({
     '__dRouteNotify' : IDL.Func([DRouteEvent], [NotifyResponse], []),
     '__dRouteSubValidate' : IDL.Func(
         [Principal, IDL.Nat],
@@ -83,5 +83,6 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
   });
+  return test_publisher;
 };
 export const init = ({ IDL }) => { return []; };

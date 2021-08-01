@@ -54,7 +54,7 @@ export type Witness = { 'labeled' : [Key, Witness] } |
   { 'leaf' : Value } |
   { 'empty' : null } |
   { 'pruned' : Hash };
-export interface _SERVICE {
+export interface test_publisher {
   '__dRouteNotify' : (arg_0: DRouteEvent) => Promise<NotifyResponse>,
   '__dRouteSubValidate' : (arg_0: Principal, arg_1: bigint) => Promise<
       [boolean, Array<number>, MerkleTreeWitness]
@@ -66,3 +66,4 @@ export interface _SERVICE {
     >,
   'testSubscribe' : () => Promise<{ 'fail' : string } | { 'success' : null }>,
 }
+export interface _SERVICE extends test_publisher {}

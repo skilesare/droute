@@ -1,6 +1,8 @@
-service : {
-  test: () -> (variant {
-                 fail: text;
-                 success;
-               });
-}
+type test_runner_droute_utilities = 
+ service {
+   test: () -> (variant {
+                  fail: text;
+                  success;
+                });
+ };
+service : () -> test_runner_droute_utilities

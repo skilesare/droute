@@ -39,6 +39,12 @@ type Result =
    err: PublishError;
    ok: SubscriptionResponse;
  };
+type ReadResponse = 
+ record {
+   data: vec Entry;
+   lastID: opt nat;
+   lastMarker: opt nat;
+ };
 type PublishStatus = 
  variant {
    delivered;
@@ -85,6 +91,12 @@ type EventPublishable =
    eventType: text;
    userID: nat;
  };
+type Entry = 
+ record {
+   data: AddressedChunkArray;
+   marker: nat;
+   primaryID: nat;
+ };
 type DataSource = 
  service {
    queryPipelinifyChunk: (ChunkRequest) -> (Result__1) query;
@@ -107,6 +119,15 @@ type DataConfig =
     };
    push;
  };
+type DRoute = 
+ service {
+   getEventRegistration: (text) -> (opt EventRegistrationStable);
+   getProcessingLogs: (text) -> (ReadResponse);
+   getPublishingCanisters: (nat) -> (vec text);
+   processQueue: () -> (Result_2);
+   publish: (EventPublishable) -> (Result_1);
+   subscribe: (SubscriptionRequest) -> (Result);
+ };
 type ChunkResponse = 
  variant {
    chunk: vec AddressedChunk;
@@ -124,16 +145,16 @@ type ChunkRequest =
    event: opt text;
    sourceIdentifier: opt Hash;
  };
+type AddressedChunkArray = 
+ vec record {
+       nat;
+       nat;
+       vec nat8;
+     };
 type AddressedChunk = 
  record {
    nat;
    nat;
    vec nat8;
  };
-service : {
-  getEventRegistration: (text) -> (opt EventRegistrationStable);
-  getPublishingCanisters: (nat) -> (vec text);
-  processQueue: () -> (Result_2);
-  publish: (EventPublishable) -> (Result_1);
-  subscribe: (SubscriptionRequest) -> (Result);
-}
+service : () -> DRoute

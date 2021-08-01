@@ -10,7 +10,7 @@ import Nat8 "mo:base/Nat8";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 
-actor Self{
+actor class test_runner_droute_utilities() = this{
     let it = C.Tester({ batchSize = 8 });
 
 
@@ -30,12 +30,12 @@ actor Self{
 
             let dRouteEvent = DrouteUtilities.createEvent(
               "com.test.construction",
-              Principal.fromActor(Self),
+              Principal.fromActor(this),
               1,
               1,
               data);
 
-            Debug.print("principal" # debug_show(Principal.fromActor(Self)));
+            Debug.print("principal" # debug_show(Principal.fromActor(this)));
 
             //Debug.print("input " # debug_show(dRouteEvent));
 

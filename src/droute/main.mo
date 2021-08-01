@@ -1,21 +1,23 @@
+import Buffer "mo:base/Buffer";
 import DRouteTypes "../DRouteTypes";
 import DRouteUtilities "../DRouteUtilities";
+import Debug "mo:base/Debug";
+import Hash "mo:base/Hash";
+import HashMap "mo:base/HashMap";
+import Heap "mo:base/Heap";
+import Int "mo:base/Int";
+import List "mo:base/List";
+import MetaTree "../metatree";
+import Nat "mo:base/Nat";
+import Order "mo:base/Order";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
-import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
-import Debug "mo:base/Debug";
-import List "mo:base/List";
 import Time "mo:base/Time";
-import Order "mo:base/Order";
-import Heap "mo:base/Heap";
-import Buffer "mo:base/Buffer";
-import Nat "mo:base/Nat";
-import Int "mo:base/Int";
-import Hash "mo:base/Hash";
+import TrixTypes "../TrixTypes/lib";
 
 
-actor Self{
+actor class DRoute() = this {
 
     //Types
     type EventPublishable = DRouteTypes.EventPublishable;
@@ -23,6 +25,7 @@ actor Self{
     type PublishError = DRouteTypes.PublishError;
     type EventRegistration = DRouteTypes.EventRegistration;
     type ValidSourceOptions = DRouteTypes.ValidSourceOptions;
+    type AddressedChunkArray = TrixTypes.AddressedChunkArray;
 
     ///////////////////////////////////
     // todo: this may need to be in the reg canister and a comprable structure in each publishing canister
@@ -38,10 +41,12 @@ actor Self{
     // /end shared structure
     ///////////////////////////////////
 
+    var metatree = MetaTree.MetaTree(#local);
+
 
     public shared func getPublishingCanisters(instances : Nat) : async [Text] {
         //todo: US 29; need to allocate and produce requested instances.
-        return [Principal.toText(Principal.fromActor(Self))];
+        return [Principal.toText(Principal.fromActor(this))];
     };
 
 
@@ -151,7 +156,7 @@ actor Self{
                 let defaultRegistration = {
                     eventType : Text = event.eventType;
                     var validSources : ValidSourceOptions = #whitelist([msg.caller]);
-                    var publishingCanisters = [Principal.toText(Principal.fromActor(Self))];
+                    var publishingCanisters = [Principal.toText(Principal.fromActor(this))];
                 };
                 registrationStore.put(event.eventType, defaultRegistration);
 
@@ -170,7 +175,7 @@ actor Self{
         switch(foundEventRegistration.validSources){
             case(#whitelist(list)){
                 label checkList for(thisItem in list.vals()){
-                    Debug.print(debug_show(thisItem) # " " #  debug_show(Principal.fromActor(Self)));
+                    Debug.print(debug_show(thisItem) # " " #  debug_show(Principal.fromActor(this)));
                     if(thisItem == msg.caller){
                         Debug.print("matches");
                         validController := true;
@@ -216,14 +221,14 @@ actor Self{
             dRouteID = thisEvent.dRouteID;
             timeRecieved = thisEvent.timeRecieved;
             status = #recieved;
-            publishCanister = Principal.fromActor(Self);
+            publishCanister = Principal.fromActor(this);
         });
 
 
        //return #err({code=404;text="Not Implemented"});
     };
 
-    public func processQueue() : async Result.Result<DRouteTypes.ProcessQueueResponse, DRouteTypes.PublishError>{
+    public shared(msg) func processQueue() : async Result.Result<DRouteTypes.ProcessQueueResponse, DRouteTypes.PublishError>{
         //see if there are events in the queue - we always get the first event
         var thisEvent : ?DRouteTypes.DRouteEvent = List.last<DRouteTypes.DRouteEvent>(pendingQueue);
         switch(thisEvent){
@@ -264,7 +269,15 @@ actor Self{
                         queueLength = List.size<DRouteTypes.DRouteEvent>(pendingQueue);});
                     };
                     case(?item){
+
                         //lets process the heap!
+                        let heapCycleID = DRouteUtilities.generateEventID({
+                            eventType = thisEvent.eventType;
+                            source = msg.caller;
+                            userID = thisEvent.userID;
+                            nonce = nonce;});
+                        nonce += 1;
+
                         var itemsProcessed = 0;
 
                         label doHeap while(1==1){
@@ -284,7 +297,45 @@ actor Self{
                                     };
                                     let aActor : DRouteTypes.ListenerCanisterActor = actor(Principal.toText(aActorPrincipal));
                                     Debug.print("in processing" # debug_show(thisEvent.userID));
-                                    let response = aActor.__dRouteNotify(thisEvent);
+
+                                    //if we await the response we may not get the log item written with atomicity
+                                    let response = await aActor.__dRouteNotify(thisEvent);
+
+                                    var aResponse : Bool = false;
+                                    var aError : ?PublishError = null;
+
+                                    switch (response){
+                                        case(#ok(aOk)){
+                                            aResponse := aOk;
+                                        };
+                                        case(#err(aErr)){
+                                            aError  := ?aErr;
+                                        };
+                                    };
+
+                                    //todo: move this calculation of namespace out of the loop
+                                    let aLogItem :  DRouteTypes.BroadcastLogItem = {
+                                        eventType = thisEvent.eventType;
+                                        eventDRouteID = thisEvent.dRouteID;
+                                        eventUserID = thisEvent.userID;
+                                        destination = aActorPrincipal;
+                                        //todo: move this calc out of the loop
+                                        processor = Principal.fromActor(this);
+                                        subscriptionUserID = thisSub.userID;
+                                        subscriptionDRoutID = thisSub.dRouteID;
+                                        index = itemsProcessed;
+                                        heapCycleID = heapCycleID;
+                                        dateSent = Time.now();
+                                        notifyResponse = aResponse;
+                                        //todo figure out how to do errors correctly;
+                                        error = aError;
+                                    };
+
+                                    //not awiting this at this point
+                                    Debug.print("writing to metatree " # debug_show(aLogItem));
+                                    let marker = metatree.write("com.droute.eventbroadcast." # thisEvent.eventType,
+                                        Int.abs(Time.now()),
+                                        DRouteUtilities.serializeBroadcastLogItem(aLogItem));
 
 
                                 };
@@ -329,6 +380,7 @@ actor Self{
                 return thisHeap;
             };
             case(?aMap){
+                //todo: currently we use the heap functionality to order the alert queue but this is not going to be 'infinately scaleable' we will need to keep active track of stake order and use that list, even if it is a multi canister list
                 for((thisKey,thisSub) in aMap.entries()){
                     thisHeap.put(thisSub);
                 };
@@ -338,40 +390,22 @@ actor Self{
 
     };
 
+
+    public shared func getProcessingLogs(eventType : Text) : async MetaTree.ReadResponse {
+        return await metatree.read("com.droute.eventbroadcast." # eventType);
+    };
+
     system func preupgrade() {
 
-        upgradePendingHeap := pendingHeap.share()
+        upgradePendingHeap := pendingHeap.share();
     };
 
     system func postupgrade() {
         pendingHeap.unsafeUnshare(upgradePendingHeap);
         upgradePendingHeap := null;
+
     };
 
 
 };
 
-
-/*
-import DRouteTypes "types";
-import Text "mo:base/Text";
-import Hash "mo:base/Hash";
-import HashMap "mo:base/HashMap";
-
-shared(msg) actor class(){
-
-    stable var upgradeEventRegistration: [DRouteTypes.EventRegistration] = [];
-
-    var registrationStore = HashMap.HashMap<Text, DRouteTypes.EventRegistration>(
-        1,
-        Text.equal,
-        Text.hash
-    );
-
-    public  func test() : async Nat {
-        return 1;
-    };
-
-
-};
-*/

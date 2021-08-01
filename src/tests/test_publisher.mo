@@ -1,20 +1,23 @@
 //import RegCanister "canister:droute";
 //import UtilityTestCanister "canister:test_runner_droute_utilities";
+import Blob "mo:base/Blob";
+import Buffer "mo:base/Buffer";
 import C "mo:matchers/Canister";
 import DRouteTypes "../DRouteTypes/lib";
+import DRouteUtilities "../DRouteUtilities/lib";
 import Debug "mo:base/Debug";
-import Blob "mo:base/Blob";
 import M "mo:matchers/Matchers";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
-import Buffer "mo:base/Buffer";
+import Array "mo:base/Array";
 import S "mo:matchers/Suite";
 import T "mo:matchers/Testable";
 import TrixTypes "../TrixTypes/lib";
+import MetaTree "../metatree/lib";
 import dRouteListener "../dRouteListener";
 import dRoutePublisher "../dRoutePublisher";
 
-actor Self{
+actor class test_publisher() = this{
 
 
 
@@ -71,7 +74,7 @@ actor Self{
 
                     ///test that the event was auto registerx
                     S.test("registration text should match", regResult.eventType : Text, M.equals<Text>(T.text("test123" : Text))),
-                    S.test("valid sources should be this canister since it sent the first object", switch(regResult.validSources){case(#whitelist(list)){list[0] == Principal.fromActor(Self)};case(_){false};}, M.equals<Bool>(T.bool(true))),
+                    S.test("valid sources should be this canister since it sent the first object", switch(regResult.validSources){case(#whitelist(list)){list[0] == Principal.fromActor(this)};case(_){false};}, M.equals<Bool>(T.bool(true))),
                     S.test("publishing canister should be the reg canister until we implement dynamic allocation", regResult.publishingCanisters[0] == Principal.toText(dRoutePub.regPrincipal), M.equals<Bool>(T.bool(true)))
                 ]);
 
@@ -111,7 +114,7 @@ actor Self{
             eventType = "test123";
             filter : ?DRouteTypes.SubscriptionFilter = null;
             throttle: ?DRouteTypes.SubscriptionThrottle = null;
-            destinationSet = [Principal.fromActor(Self)];//send notifications to this canister
+            destinationSet = [Principal.fromActor(this)];//send notifications to this canister
             userID = 1;
         };
 
@@ -168,25 +171,50 @@ actor Self{
             }
         };
 
-        switch(result){
-            case(#ok(result)){
+        //check to see if the publish is in the logs
+        Debug.print("getting logs");
+        var logs = await pubCanister.getProcessingLogs("test123");
+        //Debug.print(debug_show(logs.data.size()) # " full log " # debug_show(logs));
+        let logArray = Array.map<MetaTree.Entry, ?DRouteTypes.BroadcastLogItem>(logs.data, func(a){
+            DRouteUtilities.deserializeBroadcastLogItem(a.data);
+        });
+        let dataSize = logs.data.size();
+        let lastlog = DRouteUtilities.deserializeBroadcastLogItem(logs.data[dataSize-1].data);
+        Debug.print("last log " # debug_show(lastlog));
+
+        //Debug.print("full log "# debug_show(logArray));
+
+        switch(result, pubResult, lastlog){
+            case(#ok(result), #ok(pubResult), ?lastlog){
                 Debug.print("running suite" # debug_show(result));
 
                 let suite = S.suite("test subscribe", [
                     S.test("subscription id exists", result.subscriptionID, M.anything<Int>()),
                     //todo test the signature
 
-                    ///test that the event was auto registerx
-                    S.test("message was recived", bMessageDelivered : Bool, M.equals<Bool>(T.bool(true)))
+                    ///test that the event was recieved
+                    S.test("message was recived", bMessageDelivered : Bool, M.equals<Bool>(T.bool(true))),
+                    ///test that the event was logged
+                    S.test("log was written userID", lastlog.eventUserID : Nat, M.equals<Nat>(T.nat(2))),
+                    S.test("log was written eventType", lastlog.eventType : Text, M.equals<Text>(T.text("test123"))),
+                    S.test("log was written eventdrouteID", lastlog.eventDRouteID : Nat, M.equals<Nat>(T.nat(pubResult.dRouteID)))
                 ]);
 
                 S.run(suite);
 
                 return #success;
             };
-            case(#err(err)){
-                Debug.print("an error " # debug_show(result));
+            case(#err(err), _, _){
+                Debug.print("an error sub result" # debug_show(result));
                 return #fail(err.text);
+            };
+            case(_, #err(err), _){
+                Debug.print("an error pubresult" # debug_show(result));
+                return #fail(err.text);
+            };
+            case(_,_,_){
+                Debug.print("an error pubresult" # debug_show(result));
+                return #fail("err.text");
             };
 
         };
