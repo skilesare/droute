@@ -62,6 +62,17 @@ module {
         (Nat32.fromNat(Nat8.toNat(bytes[3])));
     };
 
+    public func bytesToNat64(bytes: [Nat8]) : Nat64{
+        (Nat32.fromNat(Nat8.toNat(bytes[0])) << 56) +
+        (Nat32.fromNat(Nat8.toNat(bytes[0])) << 48) +
+        (Nat32.fromNat(Nat8.toNat(bytes[1])) << 40) +
+        (Nat32.fromNat(Nat8.toNat(bytes[2])) << 32) +
+        (Nat32.fromNat(Nat8.toNat(bytes[0])) << 24) +
+        (Nat32.fromNat(Nat8.toNat(bytes[1])) << 16) +
+        (Nat32.fromNat(Nat8.toNat(bytes[2])) << 8) +
+        (Nat32.fromNat(Nat8.toNat(bytes[3])));
+    };
+
 
     public func natToBytes(n : Nat) : [Nat8] {
         var a : Nat8 = 0;

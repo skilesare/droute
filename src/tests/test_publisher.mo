@@ -18,6 +18,8 @@ import MetaTree "../metatree/lib";
 import dRouteListener "../dRouteListener";
 import dRoutePublisher "../dRoutePublisher";
 
+import ExperimentalCycles "mo:base/ExperimentalCycles";
+
 actor class test_publisher() = this{
 
 
