@@ -1,0 +1,12 @@
+type test_publisher = 
+ service {
+   test: () -> (variant {
+                  fail: text;
+                  success;
+                });
+   testGetWitnessEmpty: () -> (variant {
+                                 fail: text;
+                                 success;
+                               });
+ };
+service : () -> test_publisher

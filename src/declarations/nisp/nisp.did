@@ -1,0 +1,18 @@
+type Result = 
+ variant {
+   err: PublishError;
+   ok: GetWitnessResponse;
+ };
+type PublishError = 
+ record {
+   code: nat;
+   "text": text;
+ };
+type Principal = principal;
+type NIsp = 
+ service {
+   getWitness: (GetWitnessRequest) -> (Result);
+ };
+type GetWitnessResponse = variant {noRecord;};
+type GetWitnessRequest = record {"principal": Principal;};
+service : () -> NIsp

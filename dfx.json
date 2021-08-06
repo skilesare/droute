@@ -4,6 +4,10 @@
       "main": "src/droute/main.mo",
       "type": "motoko"
     },
+    "nisp": {
+      "main": "src/nisp/main.mo",
+      "type": "motoko"
+    },
     "test_runner": {
       "main": "src/tests/test_runner.mo",
       "type": "motoko"
@@ -17,6 +21,13 @@
       "type": "motoko",
       "dependencies": [
         "droute"
+      ]
+    },
+    "test_nisp": {
+      "main": "src/tests/test_nisp.mo",
+      "type": "motoko",
+      "dependencies":[
+        "nisp"
       ]
     },
 

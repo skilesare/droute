@@ -56,6 +56,7 @@ The nIsp libraries should shield the AppUser most of the complexity of the dRout
 
 14. AA AppDev I want the nISP service to help me price my services.
 
+15. AA AppDev I want to have all my canisters orgainzed under a single app STI have an easier time managing them.
 
 # Completed user stories
 

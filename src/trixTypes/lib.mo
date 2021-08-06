@@ -15,6 +15,7 @@ import Int "mo:base/Int";
 import Nat "mo:base/Nat";
 import Nat8 "mo:base/Nat8";
 import Nat32 "mo:base/Nat32";
+import Nat64 "mo:base/Nat64";
 import Nat16 "mo:base/Nat16";
 import Buffer "mo:base/Buffer";
 import Iter "mo:base/Iter";
@@ -63,14 +64,14 @@ module {
     };
 
     public func bytesToNat64(bytes: [Nat8]) : Nat64{
-        (Nat32.fromNat(Nat8.toNat(bytes[0])) << 56) +
-        (Nat32.fromNat(Nat8.toNat(bytes[0])) << 48) +
-        (Nat32.fromNat(Nat8.toNat(bytes[1])) << 40) +
-        (Nat32.fromNat(Nat8.toNat(bytes[2])) << 32) +
-        (Nat32.fromNat(Nat8.toNat(bytes[0])) << 24) +
-        (Nat32.fromNat(Nat8.toNat(bytes[1])) << 16) +
-        (Nat32.fromNat(Nat8.toNat(bytes[2])) << 8) +
-        (Nat32.fromNat(Nat8.toNat(bytes[3])));
+        (Nat64.fromNat(Nat8.toNat(bytes[0])) << 56) +
+        (Nat64.fromNat(Nat8.toNat(bytes[0])) << 48) +
+        (Nat64.fromNat(Nat8.toNat(bytes[1])) << 40) +
+        (Nat64.fromNat(Nat8.toNat(bytes[2])) << 32) +
+        (Nat64.fromNat(Nat8.toNat(bytes[0])) << 24) +
+        (Nat64.fromNat(Nat8.toNat(bytes[1])) << 16) +
+        (Nat64.fromNat(Nat8.toNat(bytes[2])) << 8) +
+        (Nat64.fromNat(Nat8.toNat(bytes[3])));
     };
 
 
