@@ -342,7 +342,8 @@ actor class DRoute() = this {
                                     Debug.print("writing to metatree " # debug_show(aLogItem));
                                     let marker = metatree.writeAndIndex("com.dRoute.eventbroadcast." # thisEvent.eventType,
                                         Int.abs(Time.now()),
-                                        DRouteUtilities.serializeBroadcastLogItem(aLogItem),
+                                        #dataIncluded({data = DRouteUtilities.serializeBroadcastLogItem(aLogItem)}),
+                                        true,
                                         broadcastLogItemIndex);
 
 
@@ -400,11 +401,12 @@ actor class DRoute() = this {
 
 
     public shared func getProcessingLogs(eventType : Text) : async MetaTree.ReadResponse {
-        return await metatree.read("com.dRoute.eventbroadcast." # eventType);
+
+        return metatree.read("com.dRoute.eventbroadcast." # eventType);
     };
 
     public shared func getProcessingLogsByIndex(index: Text, item : Nat) : async MetaTree.ReadResponse {
-        return await metatree.read("com.dRoute.eventbroadcast." # index # ".__index." # Nat.toText(item));
+        return metatree.read("com.dRoute.eventbroadcast." # index # ".__index." # Nat.toText(item));
     };
 
 

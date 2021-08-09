@@ -40,10 +40,13 @@ type Result =
    ok: SubscriptionResponse;
  };
 type ReadResponse = 
- record {
-   data: vec Entry;
-   lastID: opt nat;
-   lastMarker: opt nat;
+ variant {
+   data: record {
+           data: vec Entry;
+           lastID: opt nat;
+           lastMarker: opt nat;
+         };
+   pointer: record {canister: principal;};
  };
 type PublishStatus = 
  variant {

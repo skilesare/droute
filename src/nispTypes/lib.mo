@@ -29,9 +29,28 @@ module {
         principal: Principal.Principal;
     };
 
-    public type GetWitnessResponse = {
-        #noRecord;
+    public type GetStatusResponse = {
+        #notFound: MerkleTree.Witness;
+        #cycleBalance: (Nat, MerkleTree.Witness);
+        #pointer: (Principal, MerkleTree.Witness);
     };
+
+    public type BalanceWitness = {
+        #found: {
+            balance: Nat;
+            witness: MerkleTree.Witness;
+            };
+        #notFound: MerkleTree.Witness;
+        #pointer: {
+            canister: Principal.Principal;
+            witness: MerkleTree.Witness;
+            };
+        #err: {
+            text: Text;
+            code: Nat};
+
+    };
+
 
 
     ////////////////////////

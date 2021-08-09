@@ -5,5 +5,9 @@ export interface test_publisher {
       { 'fail' : string } |
         { 'success' : null }
     >,
+  'testGetWitnessSubscribed' : () => Promise<
+      { 'fail' : string } |
+        { 'success' : null }
+    >,
 }
 export interface _SERVICE extends test_publisher {}

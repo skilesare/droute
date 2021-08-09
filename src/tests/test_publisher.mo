@@ -178,67 +178,87 @@ actor class test_publisher() = this{
         Debug.print("getting logs");
         var logs = await pubCanister.getProcessingLogs("test123");
         //Debug.print(debug_show(logs.data.size()) # " full log " # debug_show(logs));
-        let logArray = Array.map<MetaTree.Entry, ?DRouteTypes.BroadcastLogItem>(logs.data, func(a){
-            DRouteUtilities.deserializeBroadcastLogItem(a.data);
-        });
-        let dataSize = logs.data.size();
-        let lastlog = DRouteUtilities.deserializeBroadcastLogItem(logs.data[dataSize-1].data);
-        Debug.print("last log " # debug_show(lastlog));
 
 
-
-
-        //Debug.print("full log "# debug_show(logArray));
-
-        switch(result, pubResult, lastlog){
-            case(#ok(result), #ok(pubResult), ?lastlog){
-                 var eventDRouteIDLogs = await pubCanister.getProcessingLogsByIndex("__eventDRouteID", pubResult.dRouteID);
-                 var eventDRouteIDLog = Option.unwrap(DRouteUtilities.deserializeBroadcastLogItem(eventDRouteIDLogs.data[eventDRouteIDLogs.data.size()-1].data));
-                 var eventUserIDLogs = await pubCanister.getProcessingLogsByIndex("__eventUserID", 2);
-                 var eventUserIDLog = Option.unwrap(DRouteUtilities.deserializeBroadcastLogItem(eventUserIDLogs.data[eventUserIDLogs.data.size()-1].data));
-                 var subscriptionDRouteIDLogs = await pubCanister.getProcessingLogsByIndex("__subscriptionDRouteID", result.subscriptionID);
-                 var subscriptionDRouteIDLog = Option.unwrap(DRouteUtilities.deserializeBroadcastLogItem(subscriptionDRouteIDLogs.data[subscriptionDRouteIDLogs.data.size()-1].data));
-                 var subscriptionUserIDLogs = await pubCanister.getProcessingLogsByIndex("__subscriptionUserID", 1);
-                 var subscriptionUserIDLog = Option.unwrap(DRouteUtilities.deserializeBroadcastLogItem(subscriptionUserIDLogs.data[subscriptionUserIDLogs.data.size()-1].data));
-
-                Debug.print("running suite" # debug_show(result));
-
-                let suite = S.suite("test subscribe", [
-                    S.test("subscription id exists", result.subscriptionID, M.anything<Int>()),
-                    //todo test the signature
-
-                    ///test that the event was recieved
-                    S.test("message was recived", bMessageDelivered : Bool, M.equals<Bool>(T.bool(true))),
-                    ///test that the event was logged
-                    S.test("log was written userID", lastlog.eventUserID : Nat, M.equals<Nat>(T.nat(2))),
-                    S.test("log was written eventType", lastlog.eventType : Text, M.equals<Text>(T.text("test123"))),
-                    S.test("log was written eventdrouteID", lastlog.eventDRouteID : Nat, M.equals<Nat>(T.nat(pubResult.dRouteID))),
-
-                    ///test indexes were created
-                    S.test("index event droute id was written", eventDRouteIDLog.eventDRouteID : Nat, M.equals<Nat>(T.nat(pubResult.dRouteID))),
-                    S.test("index event user id was written", eventUserIDLog.eventUserID : Nat, M.equals<Nat>(T.nat(2))),
-                    S.test("index subscription droute id was written", subscriptionDRouteIDLog.eventDRouteID : Nat, M.equals<Nat>(T.nat(pubResult.dRouteID))),
-                    S.test("index subscription user id was written", subscriptionUserIDLog.eventUserID : Nat, M.equals<Nat>(T.nat(2))),
-
-
-
-                ]);
-
-                S.run(suite);
-
-                return #success;
+        switch(logs){
+            case(#pointer(logs)){
+                return #fail("returned a pointer");
             };
-            case(#err(err), _, _){
-                Debug.print("an error sub result" # debug_show(result));
-                return #fail(err.text);
-            };
-            case(_, #err(err), _){
-                Debug.print("an error pubresult" # debug_show(result));
-                return #fail(err.text);
-            };
-            case(_,_,_){
-                Debug.print("an error pubresult" # debug_show(result));
-                return #fail("err.text");
+            case(#data(logs)){
+                let logArray = Array.map<MetaTree.Entry, ?DRouteTypes.BroadcastLogItem>(logs.data, func(a){
+                    DRouteUtilities.deserializeBroadcastLogItem(a.data);
+                });
+
+
+                let dataSize = logs.data.size();
+                let lastlog = DRouteUtilities.deserializeBroadcastLogItem(logs.data[dataSize-1].data);
+                Debug.print("last log " # debug_show(lastlog));
+
+
+
+
+                //Debug.print("full log "# debug_show(logArray));
+
+                switch(result, pubResult, lastlog){
+                    case(#ok(result), #ok(pubResult), ?lastlog){
+                        var eventDRouteIDLogs = await pubCanister.getProcessingLogsByIndex("__eventDRouteID", pubResult.dRouteID);
+                        var eventUserIDLogs = await pubCanister.getProcessingLogsByIndex("__eventUserID", 2);
+                        var subscriptionDRouteIDLogs = await pubCanister.getProcessingLogsByIndex("__subscriptionDRouteID", result.subscriptionID);
+                        var subscriptionUserIDLogs = await pubCanister.getProcessingLogsByIndex("__subscriptionUserID", 1);
+
+                        switch(eventDRouteIDLogs, eventUserIDLogs, subscriptionDRouteIDLogs, subscriptionUserIDLogs){
+                            case(#data(eventDRouteIDLogs),#data(eventUserIDLogs),#data(subscriptionDRouteIDLogs),#data(subscriptionUserIDLogs)){
+                                var eventDRouteIDLog = Option.unwrap(DRouteUtilities.deserializeBroadcastLogItem(eventDRouteIDLogs.data[eventDRouteIDLogs.data.size()-1].data));
+                                var eventUserIDLog = Option.unwrap(DRouteUtilities.deserializeBroadcastLogItem(eventUserIDLogs.data[eventUserIDLogs.data.size()-1].data));
+                                var subscriptionDRouteIDLog = Option.unwrap(DRouteUtilities.deserializeBroadcastLogItem(subscriptionDRouteIDLogs.data[subscriptionDRouteIDLogs.data.size()-1].data));
+                                var subscriptionUserIDLog = Option.unwrap(DRouteUtilities.deserializeBroadcastLogItem(subscriptionUserIDLogs.data[subscriptionUserIDLogs.data.size()-1].data));
+
+                                Debug.print("running suite" # debug_show(result));
+
+                                let suite = S.suite("test subscribe", [
+                                    S.test("subscription id exists", result.subscriptionID, M.anything<Int>()),
+                                    //todo test the signature
+
+                                    ///test that the event was recieved
+                                    S.test("message was recived", bMessageDelivered : Bool, M.equals<Bool>(T.bool(true))),
+                                    ///test that the event was logged
+                                    S.test("log was written userID", lastlog.eventUserID : Nat, M.equals<Nat>(T.nat(2))),
+                                    S.test("log was written eventType", lastlog.eventType : Text, M.equals<Text>(T.text("test123"))),
+                                    S.test("log was written eventdrouteID", lastlog.eventDRouteID : Nat, M.equals<Nat>(T.nat(pubResult.dRouteID))),
+
+                                    ///test indexes were created
+                                    S.test("index event droute id was written", eventDRouteIDLog.eventDRouteID : Nat, M.equals<Nat>(T.nat(pubResult.dRouteID))),
+                                    S.test("index event user id was written", eventUserIDLog.eventUserID : Nat, M.equals<Nat>(T.nat(2))),
+                                    S.test("index subscription droute id was written", subscriptionDRouteIDLog.eventDRouteID : Nat, M.equals<Nat>(T.nat(pubResult.dRouteID))),
+                                    S.test("index subscription user id was written", subscriptionUserIDLog.eventUserID : Nat, M.equals<Nat>(T.nat(2))),
+
+
+
+                                ]);
+
+                                S.run(suite);
+
+                                return #success;
+                            };
+                            case(_,_,_,_){
+                                Debug.print("an error pointer result" # debug_show(result));
+                                return #fail("check logs for pointer");
+                            };
+                        };
+                    };
+                    case(#err(err), _, _){
+                        Debug.print("an error sub result" # debug_show(result));
+                        return #fail(err.text);
+                    };
+                    case(_, #err(err), _){
+                        Debug.print("an error pubresult" # debug_show(result));
+                        return #fail(err.text);
+                    };
+                    case(_,_,_){
+                        Debug.print("an error pubresult" # debug_show(result));
+                        return #fail("err.text");
+                    };
+                };
             };
 
         };

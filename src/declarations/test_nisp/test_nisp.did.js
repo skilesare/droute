@@ -10,6 +10,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Variant({ 'fail' : IDL.Text, 'success' : IDL.Null })],
         [],
       ),
+    'testGetWitnessSubscribed' : IDL.Func(
+        [],
+        [IDL.Variant({ 'fail' : IDL.Text, 'success' : IDL.Null })],
+        [],
+      ),
   });
   return test_publisher;
 };

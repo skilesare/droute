@@ -1,18 +1,45 @@
+type Witness = 
+ variant {
+   "empty";
+   fork: record {
+           Witness;
+           Witness;
+         };
+   labeled: record {
+              Key;
+              Witness;
+            };
+   leaf: Value;
+   pruned: Hash;
+ };
+type Value = blob;
 type Result = 
  variant {
    err: PublishError;
-   ok: GetWitnessResponse;
+   ok: GetStatusResponse;
  };
 type PublishError = 
  record {
    code: nat;
    "text": text;
  };
-type Principal = principal;
 type NIsp = 
  service {
-   getWitness: (GetWitnessRequest) -> (Result);
+   getStatus: () -> (Result);
+   updateCycles: (principal, nat) -> (bool);
  };
-type GetWitnessResponse = variant {noRecord;};
-type GetWitnessRequest = record {"principal": Principal;};
+type Key = blob;
+type Hash = blob;
+type GetStatusResponse = 
+ variant {
+   cycleBalance: record {
+                   nat;
+                   Witness;
+                 };
+   notFound: Witness;
+   pointer: record {
+              principal;
+              Witness;
+            };
+ };
 service : () -> NIsp

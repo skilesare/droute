@@ -31,6 +31,7 @@ actor class test_publisher() = this{
         let suite = S.suite("test nisp", [
                     //test getting witness returns empty if no witness
                     S.test("testGetWitnessEmpty", switch(await testGetWitnessEmpty()){case(#success){true};case(_){false};}, M.equals<Bool>(T.bool(true))),
+                    S.test("testGetWitnessSubscribed", switch(await testGetWitnessSubscribed()){case(#success){true};case(_){false};}, M.equals<Bool>(T.bool(true))),
                     //test getting witness when member exists
                     //test getting witness when user has blocked the application
                 ]);
@@ -46,7 +47,7 @@ actor class test_publisher() = this{
         Debug.print("running testGetWitnessEmpty");
         let principal = Principal.fromActor(this);
 
-        let result = await nispActor.getWitness({principal = principal});
+        let result = await nispActor.getStatus();
 
 
         switch(result){
@@ -55,7 +56,7 @@ actor class test_publisher() = this{
 
                 let suite = S.suite("test testGetWitnessEmpty ok", [
 
-                    S.test("status is not registered", switch(result){case(#noRecord){true};case(_){false};}, M.equals<Bool>(T.bool(true)))
+                    S.test("status is not registered", switch(result){case(#notFound(aResult)){true};case(_){false};}, M.equals<Bool>(T.bool(true)))
                 ]);
 
                 S.run(suite);
@@ -73,10 +74,16 @@ actor class test_publisher() = this{
     };
 
     public shared func testGetWitnessSubscribed() : async {#success; #fail : Text} {
-        Debug.print("running testGetWitnessEmpty");
+        Debug.print("running testGetWitnessSubscribed");
         let principal = Principal.fromActor(this);
 
-        let result = await nispActor.getWitness({principal = principal});
+        //add a balance for this witness
+        let updateResult = await nispActor.updateCycles(principal, 1_000_000_000_000);
+
+
+        //checkthe status
+
+        let result = await nispActor.getStatus();
 
 
         switch(result){
@@ -85,7 +92,10 @@ actor class test_publisher() = this{
 
                 let suite = S.suite("test testGetWitnessEmpty ok", [
 
-                    S.test("status is not registered", switch(result){case(#noRecord){true};case(_){false};}, M.equals<Bool>(T.bool(true)))
+                    S.test("status is found", switch(result){case(#cycleBalance(aResult)){true};case(_){false};}, M.equals<Bool>(T.bool(true))),
+                    S.test("status is found", switch(result){case(#cycleBalance(aResult)){aResult.0};case(_){404};}, M.equals<Nat>(T.nat(1_000_000_000_000))),
+                    //todo: make sure the witness matches
+
                 ]);
 
                 S.run(suite);

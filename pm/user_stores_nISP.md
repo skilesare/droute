@@ -46,9 +46,9 @@ The nIsp libraries should shield the AppUser most of the complexity of the dRout
 
 9. AA AppDev IWT ask a user to validate their transactions STI get paid more quickly.
 
-10. AA Servie IWT have a signed token that validates tha a principal is authenticated against a particular service and has the proper delegation.
+10. AA Service IWT have a signed token that validates tha a principal is authenticated against a particular service and has the proper delegation.
 
-11. AA AppDev I want to be able to know if a user is a nISP member STI can decide if I want to let them use my sevice or not.
+11. AA AppDev I want to be able to know if a user is a nISP member STI can decide if I want to let them use my service or not.
 
 12. AA AppDev I don't want nISP calls slowing down my calls with extra calls STI have a fast services.
 

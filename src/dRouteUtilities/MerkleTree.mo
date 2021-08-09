@@ -101,16 +101,16 @@ module {
 
   let prefixToHash : [Nat8] -> Blob = Blob.fromArray;
 
-  func h(b : Blob) : Hash {
+  public func h(b : Blob) : Hash {
     Blob.fromArray(SHA256.sha256(Blob.toArray(b)));
   };
-  func h2(b1 : Blob, b2 : Blob) : Hash {
+  public func h2(b1 : Blob, b2 : Blob) : Hash {
     let d = SHA256.Digest();
     d.write(Blob.toArray(b1));
     d.write(Blob.toArray(b2));
     Blob.fromArray(d.sum());
   };
-  func h3(b1 : Blob, b2 : Blob, b3 : Blob) : Hash {
+  public func h3(b1 : Blob, b2 : Blob, b3 : Blob) : Hash {
     let d = SHA256.Digest();
     d.write(Blob.toArray(b1));
     d.write(Blob.toArray(b2));
@@ -378,6 +378,26 @@ module {
     var w = revealNothing(tree);
     for (k in ks) { w := merge(w, reveal(tree, k)); };
     return w;
+  };
+
+  public func reconstruct(w: Witness) : Blob {
+      switch(w){
+          case(#empty){
+              h("\11ic-hashtree-empty")
+          };
+          case(#pruned(prunedHash)){
+              prunedHash
+          };
+          case(#leaf(value)){
+              h2("\10ic-hashtree-leaf",value)
+          };
+          case(#labeled(labeled)){
+              h3("\13ic-hashtree-labeled", labeled.0, reconstruct(labeled.1))
+          };
+          case(#fork(fork)){
+              h3("\10ic-hashtree-fork", reconstruct(fork.0), reconstruct(fork.1))
+          };
+      };
   };
 
   /// Nests a witness under a label. This can be used when you want to use this

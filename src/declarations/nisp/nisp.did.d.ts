@@ -1,11 +1,20 @@
 import type { Principal } from '@dfinity/principal';
-export interface GetWitnessRequest { 'principal' : Principal }
-export type GetWitnessResponse = { 'noRecord' : null };
+export type GetStatusResponse = { 'cycleBalance' : [bigint, Witness] } |
+  { 'pointer' : [Principal, Witness] } |
+  { 'notFound' : Witness };
+export type Hash = Array<number>;
+export type Key = Array<number>;
 export interface NIsp {
-  'getWitness' : (arg_0: GetWitnessRequest) => Promise<Result>,
+  'getStatus' : () => Promise<Result>,
+  'updateCycles' : (arg_0: Principal, arg_1: bigint) => Promise<boolean>,
 }
-export type Principal = Principal;
 export interface PublishError { 'code' : bigint, 'text' : string }
-export type Result = { 'ok' : GetWitnessResponse } |
+export type Result = { 'ok' : GetStatusResponse } |
   { 'err' : PublishError };
+export type Value = Array<number>;
+export type Witness = { 'labeled' : [Key, Witness] } |
+  { 'fork' : [Witness, Witness] } |
+  { 'leaf' : Value } |
+  { 'empty' : null } |
+  { 'pruned' : Hash };
 export interface _SERVICE extends NIsp {}

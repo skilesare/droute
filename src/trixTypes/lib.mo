@@ -414,6 +414,23 @@ module {
         return [];
     };
 
+    public func flattenAddressedChunkArray(data : AddressedChunkArray) : [Nat8]{
+        let accumulator : Buffer.Buffer<Nat8> = Buffer.Buffer<Nat8>(getAddressedChunkArraySize(data));
+        for(thisItem in data.vals()){
 
+            for(thisbyte in natToBytes(thisItem.0).vals()){
+                accumulator.add(thisbyte);
+            };
+            for(thisbyte in natToBytes(thisItem.1).vals()){
+                accumulator.add(thisbyte);
+            };
+            for(thisbyte in thisItem.2.vals()){
+                accumulator.add(thisbyte);
+            };
+        };
+        return accumulator.toArray();
+
+
+    };
 
 };

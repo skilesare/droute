@@ -9,6 +9,7 @@ import Heap "mo:base/Heap";
 import Int "mo:base/Int";
 import List "mo:base/List";
 import MetaTree "../metatree";
+import MerkleTree "../dRouteUtilities/MerkleTree";
 import Nat "mo:base/Nat";
 import Order "mo:base/Order";
 import Principal "mo:base/Principal";
@@ -37,24 +38,105 @@ actor class NIsp() = this {
     // /end shared structure
     ///////////////////////////////////
 
+
+
+
+    stable var merkleRollUp  = MerkleTree.empty();
+
+    //todo: make metatree stable
     var metatree = MetaTree.MetaTree(#local);
 
-    var broadcastLogItemIndex : [MetaTree.MetaTreeIndex] = [
-        {namespace = "com.dRoute.eventbroadcast.__eventDRouteID"; dataZone=3; dataChunk=0; indexType = #Nat;},
-        {namespace = "com.dRoute.eventbroadcast.__eventUserID"; dataZone=4; dataChunk=0; indexType = #Nat;},
-        {namespace = "com.dRoute.eventbroadcast.__subscriptionDRouteID"; dataZone=8; dataChunk=0; indexType = #Nat;},
-        {namespace = "com.dRoute.eventbroadcast.__subscriptionUserID"; dataZone=7; dataChunk=0; indexType = #Nat;}
-    ];
+
+    //var broadcastLogItemIndex : [MetaTree.MetaTreeIndex] = [
+    //    {namespace = "com.nisp.cycleWitness.__eventDRouteID"; dataZone=3; dataChunk=0; indexType = #Nat;},
+    //
+    //];
+
+    func pricipalAsNat(principal : Principal) : Nat{
+        TrixTypes.bytesToNat(TrixTypes.principalToBytes(principal));
+    };
+
+    func getBalanceWitness(principal : Principal) : NIspTypes.BalanceWitness {
+
+        //todo: make sure the caller isnt anonymous
+
+        //todo: highly inefficent becaue it converst to text
+        Debug.print("in get balance witness " # debug_show(principal));
+        let thisPrincipal = pricipalAsNat(principal);
+        let witness = metatree.getWitnessByNamespace("com.nisp.balance", thisPrincipal, 0);
+        Debug.print("found Witness" # debug_show(witness));
+        let balanceRecord = metatree.readUnique("com.nisp.balance", thisPrincipal);
+        Debug.print("found balance" # debug_show(balanceRecord));
+        switch(witness, balanceRecord){
+            case(#finalWitness(witness), #data(balanceRecord)){
+                Debug.print("handling balance and witness");
+                if(balanceRecord.data.size() == 0){
+                    return #notFound(witness);
+                } else {
+                    let thisChunk = balanceRecord.data[0].data;
+                    return #found({
+                            balance = TrixTypes.bytesToNat(TrixTypes.getDataChunkFromAddressedChunkArray(thisChunk,0,0));
+                            witness = witness;
+                        });
+                };
+            };
+            case(#pointer(aPointer),#pointer(bPointer)){
+                //todo: document how a witness principal must be on the same canister as the response
+                Debug.print("in pointer");
+                assert(aPointer.canister == bPointer.canister);
+                return #pointer({
+                        canister = aPointer.canister;
+                        witness = aPointer.witness;
+                    });
+            };
+            case(_,_){
+                Debug.print("Shouldnt be here");
+                return #err({code=404; text="not implemented subscribe"});
+            };
+        };
+        //return #ok();
+
+        return #err({code=404; text="not implemented subscribe"})
+    };
 
 
+    public shared(msg) func getStatus() : async Result.Result<NIspTypes.GetStatusResponse, DRouteTypes.PublishError>{
 
+        Debug.print("getting status");
+        var currentWitness =  getBalanceWitness(msg.caller);
+        Debug.print("have witess " # debug_show(currentWitness));
+        switch(currentWitness){
+            case(#notFound(result)){
+                return #ok(#notFound(result));
+            };
+            case(#found(result)){
+                return #ok(#cycleBalance((result.balance, result.witness)));
+            };
+            case(#pointer(result)){
+                return #ok(#pointer((result.canister, result.witness)));
+            };
+            case(#err(err)){
+                return #err(err);
+            };
 
-    public shared(msg) func getWitness(_request : NIspTypes.GetWitnessRequest) : async Result.Result<NIspTypes.GetWitnessResponse, DRouteTypes.PublishError>{
-
+        };
         Debug.print("returning no record");
-        return #ok(#noRecord);
+        //return #ok(#not);
 
-        //return #err({code=404; text="not implemented subscribe"})
+        return #err({code=404; text="not implemented subscribe"})
+    };
+
+    public shared(msg) func updateCycles(principal : Principal, cycles : Nat) : async Bool{
+        //todo: only allow for controler
+        //todo: never set for anonymous
+        Debug.print("adding cylces to principal" # debug_show(pricipalAsNat(principal)));
+        let marker = await metatree.replace("com.nisp.balance",
+            pricipalAsNat(principal),
+            #dataIncluded({data = [(0,0,TrixTypes.natToBytes(cycles))]}),
+            true);
+        //marker should be 0
+        Debug.print(debug_show(marker));
+        return true;
     };
 
 

@@ -17,10 +17,13 @@ export const idlFactory = ({ IDL }) => {
     'primaryID' : IDL.Nat,
     'marker' : IDL.Nat,
   });
-  const ReadResponse = IDL.Record({
-    'data' : IDL.Vec(Entry),
-    'lastID' : IDL.Opt(IDL.Nat),
-    'lastMarker' : IDL.Opt(IDL.Nat),
+  const ReadResponse = IDL.Variant({
+    'data' : IDL.Record({
+      'data' : IDL.Vec(Entry),
+      'lastID' : IDL.Opt(IDL.Nat),
+      'lastMarker' : IDL.Opt(IDL.Nat),
+    }),
+    'pointer' : IDL.Record({ 'canister' : IDL.Principal }),
   });
   const ProcessQueueResponse = IDL.Record({
     'queueLength' : IDL.Nat,

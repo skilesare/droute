@@ -8,5 +8,9 @@ type test_publisher =
                                  fail: text;
                                  success;
                                });
+   testGetWitnessSubscribed: () -> (variant {
+                                      fail: text;
+                                      success;
+                                    });
  };
 service : () -> test_publisher

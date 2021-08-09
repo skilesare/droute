@@ -43,6 +43,22 @@ Description
 
 9. AA AppDev IWT specify if I want the metatree to use the global service or a local service STI reduce my complexity
 
+10. AA AppDev IWT replace a value in the metaTree if it is a singleton value STI can use it as a datastore
+
+Status: Started
+
+11. AA AppDev IWT have my index recalculated if I replace and item STI don't pull wrong data.
+
+12. AA AppDev IWT have my index point to the raw data STI don't have data duplication.
+
+13. AA AppDev IWT have my primary values indexed in a merkleTree so that I can keep track of certified values in my tree;
+
+14. AA AppDev IWT not have to keep track of my marker if I'm using unique values STI don't have more data to keep track of.
+
+Status Started
+
+
+
 
 
 # Interface design

@@ -72,11 +72,14 @@ export interface PublishResponse {
 }
 export type PublishStatus = { 'recieved' : null } |
   { 'delivered' : null };
-export interface ReadResponse {
-  'data' : Array<Entry>,
-  'lastID' : [] | [bigint],
-  'lastMarker' : [] | [bigint],
-}
+export type ReadResponse = {
+    'data' : {
+      'data' : Array<Entry>,
+      'lastID' : [] | [bigint],
+      'lastMarker' : [] | [bigint],
+    }
+  } |
+  { 'pointer' : { 'canister' : Principal } };
 export type Result = { 'ok' : SubscriptionResponse } |
   { 'err' : PublishError };
 export type Result_1 = { 'ok' : PublishResponse } |
