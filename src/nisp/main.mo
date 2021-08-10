@@ -63,9 +63,9 @@ actor class NIsp() = this {
         //todo: highly inefficent becaue it converst to text
         Debug.print("in get balance witness " # debug_show(principal));
         let thisPrincipal = pricipalAsNat(principal);
-        let witness = metatree.getWitnessByNamespace("com.nisp.balance", thisPrincipal, 0);
+        let witness = metatree.getWitnessByNamespace("com.nisp.balance." # Principal.toText(principal), thisPrincipal, 0);
         Debug.print("found Witness" # debug_show(witness));
-        let balanceRecord = metatree.readUnique("com.nisp.balance", thisPrincipal);
+        let balanceRecord = metatree.readUnique("com.nisp.balance." # Principal.toText(principal), thisPrincipal);
         Debug.print("found balance" # debug_show(balanceRecord));
         switch(witness, balanceRecord){
             case(#finalWitness(witness), #data(balanceRecord)){
@@ -100,7 +100,7 @@ actor class NIsp() = this {
     };
 
 
-    public shared(msg) func getStatus() : async Result.Result<NIspTypes.GetStatusResponse, DRouteTypes.PublishError>{
+    public  shared query(msg)  func getStatus() : async Result.Result<NIspTypes.GetStatusResponse, DRouteTypes.PublishError>{
 
         Debug.print("getting status");
         var currentWitness =  getBalanceWitness(msg.caller);
@@ -130,12 +130,22 @@ actor class NIsp() = this {
         //todo: only allow for controler
         //todo: never set for anonymous
         Debug.print("adding cylces to principal" # debug_show(pricipalAsNat(principal)));
-        let marker = await metatree.replace("com.nisp.balance",
+        let marker = await metatree.replace("com.nisp.balance." # Principal.toText(principal),
             pricipalAsNat(principal),
             #dataIncluded({data = [(0,0,TrixTypes.natToBytes(cycles))]}),
             true);
         //marker should be 0
         Debug.print(debug_show(marker));
+        return true;
+    };
+
+    public shared(msg) func __resetTest() : async Bool{
+        //todo: only allow for controler
+        //todo: never set for anonymous
+
+        let marker = await metatree.__resetTest();
+        //marker should be 0
+        Debug.print("reseting metatree");
         return true;
     };
 

@@ -223,6 +223,9 @@ module {
 
         };
 
+
+
+
         public func replace(namespace : Text, primaryID : Nat, dataConfig: PipelinifyTypes.DataConfig, bCertify: Bool) : async Nat{
             //todo: write to metatree service
             let marker = 1; //we use 1 with replace because it is always unique
@@ -278,6 +281,17 @@ module {
             };
 
         };
+
+        public func __resetTest() : async Bool{
+            //todo: restrict to controller
+            namespaceMap := HashMap.HashMap<Nat,[Entry]>(1, Nat.equal, bigNatToNat32);
+            certifiedTree := MerkleTree.empty();
+
+            return true;
+
+        };
+
+
 
         func calcIndexMeta(index : MetaTreeIndex, data : AddressedChunkArray) : {primaryID : Nat; postFix : Text} {
 

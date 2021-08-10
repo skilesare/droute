@@ -44,6 +44,8 @@ The nIsp libraries should shield the AppUser most of the complexity of the dRout
 
 8. AA AppDev IWT to publish a menu of services for the agent to use when calculating confirmations STI get paid what I want.
 
+Status: Started
+
 9. AA AppDev IWT ask a user to validate their transactions STI get paid more quickly.
 
 10. AA Service IWT have a signed token that validates tha a principal is authenticated against a particular service and has the proper delegation.
