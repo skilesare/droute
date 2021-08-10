@@ -52,7 +52,7 @@ actor class test_publisher() = this{
 
         let resetresult = await nispActor.__resetTest();
 
-        let result = await nispActor.getStatus();
+        let result = await nispActor.getStatus(null);
 
 
         switch(result){
@@ -89,7 +89,7 @@ actor class test_publisher() = this{
 
         //checkthe status
 
-        let result = await nispActor.getStatus();
+        let result = await nispActor.getStatus(null);
 
 
         switch(result){
@@ -134,6 +134,7 @@ actor class test_publisher() = this{
 
         let nispApp = NIspApp.NIspApp({
             getMenu = ?getMenu;
+            registeredFromNIsp = null;
         });
 
         //checkthe status

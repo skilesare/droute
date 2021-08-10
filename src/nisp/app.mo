@@ -40,6 +40,7 @@ module {
 
     public type NIspAppConfig = {
         getMenu : ?(() -> async NIspMenu);
+        registeredFromNIsp : ?(() -> async Bool);
     };
 
     public type NIspMenuItem = {
@@ -74,10 +75,32 @@ module {
             }
         };
 
+        let __registeredFromNIsp : () -> async Bool = switch (__config.registeredFromNIsp){
+            case(null){
+                func __registeredFromNIsp() : async Bool{
+                    //just returns nothing
+                    return false;
+                }
+            };
+            case(?__registeredFromNIsp){
+                __registeredFromNIsp;
+            }
+        };
+
         public func getMenu() : async Result.Result<NIspMenu, NIspError>{
             let result = await __getMenu();
 
             return #ok(result);
+        };
+
+
+        public func registeredFromNIsp(principal: Principal) : async Result.Result<Bool, NIspError>{
+            //this should be a droute application.
+            //todo make sure that the calling principal is part of nisp
+
+            let result = await __registeredFromNIsp();
+
+            return #ok(true);
         };
     };
 

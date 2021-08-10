@@ -42,19 +42,15 @@ The nIsp libraries should shield the AppUser most of the complexity of the dRout
 
 7. AA AppDev IWT submit certified requests to allocate cycles STI don't have the user run out of cycles.
 
-8. AA AppDev IWT to publish a menu of services for the agent to use when calculating confirmations STI get paid what I want.
-
-Status: Started
-
 9. AA AppDev IWT ask a user to validate their transactions STI get paid more quickly.
 
 10. AA Service IWT have a signed token that validates tha a principal is authenticated against a particular service and has the proper delegation.
 
-11. AA AppDev I want to be able to know if a user is a nISP member STI can decide if I want to let them use my service or not.
-
 12. AA AppDev I don't want nISP calls slowing down my calls with extra calls STI have a fast services.
 
 13. AA AppDev I want to query the nISP service for a proof of nISP on my app and then send that to my canister STI before the user makes a call so I have them properly classified.
+
+Status: Started
 
 14. AA AppDev I want the nISP service to help me price my services.
 
@@ -62,7 +58,13 @@ Status: Started
 
 # Completed user stories
 
+8. AA AppDev IWT to publish a menu of services for the agent to use when calculating confirmations STI get paid what I want.
 
+Status: Completed
+
+11. AA AppDev I want to be able to know if a user is a nISP member STI can decide if I want to let them use my service or not.
+
+Status: Complete
 
 # Discarded user stories
 

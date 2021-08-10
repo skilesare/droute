@@ -48,6 +48,11 @@ module {
         };
         #pointer : {
             canister: Principal;
+            namespace : Text;
+            minID : ?Nat;
+            maxID : ?Nat;
+            lastID : Nat;
+            lastMarker: Nat;
         };
     };
 
@@ -73,6 +78,10 @@ module {
             #Int;
             #Dyanamic : Principal;
         };
+    };
+
+    public type MetaTreeActor = actor {
+        readToData : (namespace : Text, minID : ?Nat, maxID : ?Nat, lastID : Nat, lastMarker: Nat) -> async ReadResponse;
     };
 
 
@@ -325,6 +334,20 @@ module {
 
 
         var maxchunkSize : Nat = 2_000_000;
+
+
+        public func readToData(response : ReadResponse) : async ReadResponse{
+            switch(response){
+                case(#data(aData)){
+                    return response;
+                };
+                case(#pointer(aPointer)){
+                    let aActor : MetaTreeActor = actor(Principal.toText(aPointer.canister));
+
+                    return await aActor.readToData(aPointer.namespace, aPointer.minID, aPointer.maxID, aPointer.lastID, aPointer.lastMarker);
+                };
+            };
+        };
 
 
 

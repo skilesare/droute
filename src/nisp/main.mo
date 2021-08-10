@@ -1,28 +1,90 @@
 import Buffer "mo:base/Buffer";
 import NIspTypes "../nispTypes";
 import DRouteTypes "../DRouteTypes";
-import DRouteUtilities "../DRouteUtilities";
 import Debug "mo:base/Debug";
-import Hash "mo:base/Hash";
 import HashMap "mo:base/HashMap";
-import Heap "mo:base/Heap";
-import Int "mo:base/Int";
-import List "mo:base/List";
 import MetaTree "../metatree";
-import MerkleTree "../dRouteUtilities/MerkleTree";
-import Nat "mo:base/Nat";
-import Order "mo:base/Order";
+import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Iter "mo:base/Iter";
 import Text "mo:base/Text";
-import Time "mo:base/Time";
 import TrixTypes "../TrixTypes/lib";
 
 
 actor class NIsp() = this {
 
+    type NIspAppRecord = {
+            app: Text;
+            cycles: Nat;
+            blocked: Bool;
+        };
+
+    type NIspAccount = {
+        principal: Principal.Principal;
+        cycles: Nat;
+        apps: [NIspAppRecord];
+    };
+
+    func serializeNIspAccount(account: NIspAccount) : TrixTypes.Workspace{
+        let ws = TrixTypes.emptyWorkspace();
+        let chunks = Buffer.Buffer<TrixTypes.AddressedChunk>(account.apps.size() + 3);
+        chunks.add((0,0,TrixTypes.natToBytes(1))); //version 1
+        chunks.add((1,0, TrixTypes.principalToBytes(account.principal)));
+        chunks.add((2,0, TrixTypes.natToBytes(account.cycles)));
+        //todo: this won't scale past 2MB of apps
+        var appTracker = 0;
+        //todo how do we put null items into a datazone?
+        if(account.apps.size() > 0){
+            for(thisApp in account.apps.vals()){
+                chunks.add((3,appTracker, TrixTypes.textToBytes(thisApp.app)));
+                chunks.add((4,appTracker, TrixTypes.natToBytes(thisApp.cycles)));
+                chunks.add((5,appTracker, TrixTypes.boolToBytes(thisApp.blocked)));
+                appTracker += 1;
+            };
+        } else {
+            chunks.add((3,0, []));
+            chunks.add((4,0, []));
+            chunks.add((5,0, []));
+        };
 
 
+        TrixTypes.fileAddressedChunks(ws,chunks.toArray());
+        return ws;
+    };
+
+    func deSerializeNIspAccountChunks(chunks: TrixTypes.AddressedChunkArray) : ?NIspAccount{
+        let ws = TrixTypes.emptyWorkspace();
+        TrixTypes.fileAddressedChunks(ws,chunks);
+        deSerializeNIspAccountWorkspace(ws);
+    };
+
+    func deSerializeNIspAccountWorkspace(ws: TrixTypes.Workspace) : ?NIspAccount{
+
+        let version = TrixTypes.bytesToNat(ws.get(0).get(0).toArray());
+        if(version == 1){
+            let apps = Buffer.Buffer<NIspAppRecord>(ws.get(3).size());
+            if(ws.size() > 3){
+                //if the apps arent there we don't need to loop
+                //todo: how do we pull zones out...
+                for(thisApp in Iter.range(0, ws.get(3).size()-1)){
+                    if(ws.get(3).get(thisApp).size() > 0){
+                        apps.add({
+                            app = TrixTypes.bytesToText(ws.get(3).get(thisApp).toArray());
+                            cycles = TrixTypes.bytesToNat(ws.get(4).get(thisApp).toArray());
+                            blocked = TrixTypes.bytesToBool(ws.get(5).get(thisApp).toArray());
+                        });
+                    };
+                };
+            };
+            return ?{
+                principal = TrixTypes.bytesToPrincipal(ws.get(1).get(0).toArray());
+                cycles = TrixTypes.bytesToNat(ws.get(2).get(0).toArray());
+                apps = apps.toArray();
+            }
+        };
+        return null;
+    };
 
     ///////////////////////////////////
     // todo: this may need to be in the reg canister and a comprable structure in each publishing canister
@@ -41,8 +103,6 @@ actor class NIsp() = this {
 
 
 
-    stable var merkleRollUp  = MerkleTree.empty();
-
     //todo: make metatree stable
     var metatree = MetaTree.MetaTree(#local);
 
@@ -56,27 +116,52 @@ actor class NIsp() = this {
         TrixTypes.bytesToNat(TrixTypes.principalToBytes(principal));
     };
 
-    func getBalanceWitness(principal : Principal) : NIspTypes.BalanceWitness {
+    func getBalanceWitness(principal : Principal, apps : ?[Text]) : NIspTypes.BalanceWitness {
 
         //todo: make sure the caller isnt anonymous
-
+        let principalText = Principal.toText(principal);
         //todo: highly inefficent becaue it converst to text
         Debug.print("in get balance witness " # debug_show(principal));
         let thisPrincipal = pricipalAsNat(principal);
-        let witness = metatree.getWitnessByNamespace("com.nisp.balance." # Principal.toText(principal), thisPrincipal, 0);
+        let witness = metatree.getWitnessByNamespace("com.nisp.account." # principalText, thisPrincipal, 0);
         Debug.print("found Witness" # debug_show(witness));
-        let balanceRecord = metatree.readUnique("com.nisp.balance." # Principal.toText(principal), thisPrincipal);
+        let balanceRecord = metatree.readUnique("com.nisp.account." # principalText, thisPrincipal);
         Debug.print("found balance" # debug_show(balanceRecord));
         switch(witness, balanceRecord){
             case(#finalWitness(witness), #data(balanceRecord)){
-                Debug.print("handling balance and witness");
+                Debug.print("handling balance and witness ");
+
+                //todo: probably shouldnt do an unwrap
+
+
+
                 if(balanceRecord.data.size() == 0){
                     return #notFound(witness);
                 } else {
-                    let thisChunk = balanceRecord.data[0].data;
+
+                    let nispAccount = Option.unwrap(deSerializeNIspAccountChunks(balanceRecord.data[0].data));
+                    Debug.print("nisp account " # debug_show(nispAccount));
+                    let appBuffer = Buffer.Buffer<(NIspAppRecord)>(switch(apps){case(null){1};case(?app){app.size()}});
+                    switch(apps){
+                        case(null){};
+                        case(?apps){
+
+                            for(thisApp in apps.vals()){
+                                label availableApps for(anApp in nispAccount.apps.vals()){
+                                    if(thisApp == anApp.app){
+                                        appBuffer.add(anApp);
+                                        break availableApps;
+                                    };
+                                };
+
+
+                            };
+                        };
+                    };
                     return #found({
-                            balance = TrixTypes.bytesToNat(TrixTypes.getDataChunkFromAddressedChunkArray(thisChunk,0,0));
+                            balance = nispAccount.cycles;
                             witness = witness;
+                            apps = appBuffer.toArray();
                         });
                 };
             };
@@ -100,10 +185,10 @@ actor class NIsp() = this {
     };
 
 
-    public  shared query(msg)  func getStatus() : async Result.Result<NIspTypes.GetStatusResponse, DRouteTypes.PublishError>{
+    public  shared query(msg)  func getStatus(apps : ?[Text]) : async Result.Result<NIspTypes.GetStatusResponse, DRouteTypes.PublishError>{
 
         Debug.print("getting status");
-        var currentWitness =  getBalanceWitness(msg.caller);
+        var currentWitness =  getBalanceWitness(msg.caller, apps);
         Debug.print("have witess " # debug_show(currentWitness));
         switch(currentWitness){
             case(#notFound(result)){
@@ -130,13 +215,46 @@ actor class NIsp() = this {
         //todo: only allow for controler
         //todo: never set for anonymous
         Debug.print("adding cylces to principal" # debug_show(pricipalAsNat(principal)));
-        let marker = await metatree.replace("com.nisp.balance." # Principal.toText(principal),
-            pricipalAsNat(principal),
-            #dataIncluded({data = [(0,0,TrixTypes.natToBytes(cycles))]}),
-            true);
-        //marker should be 0
-        Debug.print(debug_show(marker));
-        return true;
+        let principalText = Principal.toText(principal);
+        let principalNat = pricipalAsNat(principal);
+        //todo: implement a metatree.readToEnd(readResponse) that makes sure we get the record for an update call
+        let balanceRecord = await metatree.readToData(metatree.readUnique("com.nisp.account." # principalText, principalNat));
+        switch(balanceRecord){
+            case(#data(balanceResult)){
+                if(balanceResult.data.size() > 0 ){
+                    let nispAccount = Option.unwrap(deSerializeNIspAccountChunks(balanceResult.data[0].data));
+                    let newNispAccount = {
+                        principal = nispAccount.principal;
+                        cycles = cycles;
+                        apps = nispAccount.apps;
+                    };
+                    let marker = await metatree.replace("com.nisp.account." # principalText,
+                        principalNat,
+                        //todo: this needs to be a better interface for metatree that takes workspaces and serialization into account. use orthoginal percistance
+                        #dataIncluded({data = TrixTypes.workspaceToAddressedChunkArray(serializeNIspAccount(newNispAccount))}),
+                        true);
+                    //marker should be 0
+                    Debug.print(debug_show(marker));
+                    return true;
+                } else {
+                    let newNispAccount = {
+                        principal = principal;
+                        cycles = cycles;
+                        apps = [];
+                    };
+                    let marker = await metatree.replace("com.nisp.account." # principalText,
+                        principalNat,
+                        //todo: this needs to be a better interface for metatree that takes workspaces and serialization into account. use orthoginal percistance
+                        #dataIncluded({data = TrixTypes.workspaceToAddressedChunkArray(serializeNIspAccount(newNispAccount))}),
+                        true);
+                    //marker should be 0
+                    Debug.print(debug_show(marker));
+                    return true;
+                };
+            };
+            case(_){return false;}
+        };
+
     };
 
     public shared(msg) func __resetTest() : async Bool{
