@@ -6,24 +6,24 @@ This code is released for code verification purposes. All rights are retained by
 */
 ///////////////////////////////
 
-import Text "mo:base/Text";
-import Result "mo:base/Result";
-import Principal "mo:base/Principal";
+import Array "mo:base/Array";
+import Blob "mo:base/Blob";
+import Buffer "mo:base/Buffer";
+import Char "mo:base/Char";
+import Debug "mo:base/Debug";
 import Hash "mo:base/Hash";
-import List "mo:base/List";
 import Int "mo:base/Int";
+import Iter "mo:base/Iter";
+import List "mo:base/List";
 import Nat "mo:base/Nat";
-import Nat8 "mo:base/Nat8";
+import Nat16 "mo:base/Nat16";
 import Nat32 "mo:base/Nat32";
 import Nat64 "mo:base/Nat64";
-import Nat16 "mo:base/Nat16";
-import Buffer "mo:base/Buffer";
-import Iter "mo:base/Iter";
-import Array "mo:base/Array";
+import Nat8 "mo:base/Nat8";
 import Prelude "mo:base/Prelude";
-import Debug "mo:base/Debug";
-import Char "mo:base/Char";
-import Blob "mo:base/Blob";
+import Principal "mo:base/Principal";
+import Result "mo:base/Result";
+import Text "mo:base/Text";
 
 
 module {
@@ -850,6 +850,14 @@ module {
         let result = Buffer.Buffer<Buffer.Buffer<Nat8>>(dz.size());
         for(thisItem in dz.vals()){
             result.add(valueUnstableAsBytesBuffer(thisItem));
+        };
+        return result;
+    };
+
+    public func byteBufferChunksToValueUnstableBufferDataZone(buffer : Buffer.Buffer<Buffer.Buffer<Nat8>>): DataZone{
+        let result = Buffer.Buffer<TrixValueUnstable>(buffer.size());
+        for(thisItem in buffer.vals()){
+            result.add(#Bytes(#thawed(thisItem)));
         };
         return result;
     };
