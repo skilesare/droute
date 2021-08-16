@@ -451,6 +451,8 @@ module {
                         data = [];
                         lastID = null;
                         lastMarker = null;
+                        firstID = null;
+                        firstMarker = null;
                     });
                 };
                 case(?currentList){
@@ -466,6 +468,8 @@ module {
                         data = [];
                         lastID = null;
                         lastMarker = null;
+                        firstID = null;
+                        firstMarker = null;
                         });
                     };
                     switch(minID, maxID){
