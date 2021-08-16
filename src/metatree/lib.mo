@@ -57,6 +57,8 @@ module {
             data: [Entry];
             lastID: ?Nat;
             lastMarker: ?Nat;
+            firstID: ?Nat;
+            firstMarker : ?Nat;
         };
         #pointer : {
             canister: Principal;
@@ -537,11 +539,16 @@ module {
                     let lastItem = if(responseBuffer.size() > 0)
                             {responseBuffer.get(responseBuffer.size() - 1)}
                         else {{primaryID=0;marker=0;data=[];}};
+                    let firstItem = if(responseBuffer.size() > 0)
+                            {responseBuffer.get(0)}
+                        else {{primaryID=0;marker=0;data=[];}};
 
                     return #data({
                         data = responseBuffer.toArray();
                         lastID = ?lastItem.primaryID;
                         lastMarker = ?lastItem.marker;
+                        firstID = ?firstItem.primaryID;
+                        firstMarker = ?firstItem.marker;
                     });
 
                 };

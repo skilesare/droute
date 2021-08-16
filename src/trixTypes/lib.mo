@@ -799,6 +799,58 @@ module {
         };
     };
 
+    public func valueStableAsNat16(val : TrixValue) : Nat16{
+        switch (val){
+            case(#Nat16(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
+    public func valueStableAsNat32(val : TrixValue) : Nat32{
+        switch (val){
+            case(#Nat32(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
+    public func valueStableAsNat64(val : TrixValue) : Nat64{
+        switch (val){
+            case(#Nat64(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
+    public func valueStableAsNat(val : TrixValue) : Nat{
+        switch (val){
+            case(#Nat(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
     //todo: make these for every value type
     //buffer
     //nat - 8 16 32 64
@@ -897,6 +949,19 @@ module {
     public func valueUnstableAsNat64(val : TrixValueUnstable) : Nat64{
         switch (val){
             case(#Nat64(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
+    public func valueUnstableAsNat(val : TrixValueUnstable) : Nat{
+        switch (val){
+            case(#Nat(val)){
                 val
             };
             case(_){
