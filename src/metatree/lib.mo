@@ -8,7 +8,7 @@ This code is released for code verification purposes. All rights are retained by
 
 import Text "mo:base/Text";
 import Result "mo:base/Result";
-import Principal "mo:base/Principal";
+import Principal "mo:principal/Principal";
 import Hash "mo:base/Hash";
 import List "mo:base/List";
 import Nat "mo:base/Nat";
@@ -89,6 +89,7 @@ module {
             #Text;
             #Int;
             #Dyanamic : Principal;
+            #Principal;
         };
     };
 
@@ -382,6 +383,11 @@ module {
                 case(#Text){
                     let n = SHA256.sha256(TrixTypes.textToBytes(switch(val){case(#Text(val)){val};case(_){return null;}}));
                     {postFix = TrixTypes.bytesToText(n);
+                    primaryID = TrixTypes.bytesToNat(n)};
+                };
+                case(#Principal){
+                    let n = SHA256.sha256(TrixTypes.principalToBytes(switch(val){case(#Principal(val)){val};case(_){return null;}}));
+                    {postFix = Principal.toText(switch(val){case(#Principal(val)){val};case(_){return null;}});
                     primaryID = TrixTypes.bytesToNat(n)};
                 };
                 case(_){

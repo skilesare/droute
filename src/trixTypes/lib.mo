@@ -21,7 +21,7 @@ import Nat32 "mo:base/Nat32";
 import Nat64 "mo:base/Nat64";
 import Nat8 "mo:base/Nat8";
 import Prelude "mo:base/Prelude";
-import Principal "mo:base/Principal";
+import Principal "mo:principal/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 
@@ -268,12 +268,12 @@ module {
     };
 
     public func principalToBytes(_principal: Principal) : [Nat8]{
-        return textToBytes(Principal.toText(_principal));
+        return Blob.toArray(Principal.toBlob(_principal));
     };
 
     //todo: this should go to Blob once they add Principal.fromBlob
     public func bytesToPrincipal(_bytes: [Nat8]) : Principal{
-        return Principal.fromText(bytesToText(_bytes));
+        return Principal.fromBlob(Blob.fromArray(_bytes));
     };
 
     public func boolToBytes(_bool : Bool) : [Nat8]{
