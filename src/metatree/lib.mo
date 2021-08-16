@@ -41,6 +41,17 @@ module {
         data: AddressedChunkArray;
     };
 
+    public type EntryGroup = {
+        entries : [Entry];
+        firstKey : Nat;
+        firstMarker : Nat;
+        lastKey: Nat;
+        lastMarker : Nat;
+        indexCanister: {
+            #this; //held here
+            #remote: Principal;};
+    };
+
     public type ReadResponse = {
         #data : {
             data: [Entry];
@@ -96,8 +107,8 @@ module {
             Nat32.fromNat(Nat.rem(n, 4_294_967_295));
         };
 
-        //todo: we realluy need a sha256 Hashmap
-        var namespaceMap : HashMap.HashMap<Nat,[Entry]> = HashMap.HashMap<Nat,[Entry]>(1, Nat.equal, bigNatToNat32);
+        //todo: we really need a sha256 Hashmap
+        var namespaceMap : HashMap.HashMap<Nat,[EntryGroup]> = HashMap.HashMap<Nat,[EntryGroup]>(1, Nat.equal, bigNatToNat32);
         var certifiedTree = MerkleTree.empty();
         let natToBytes = TrixTypes.natToBytes;
         let h = MerkleTree.h;
@@ -153,11 +164,18 @@ module {
             nonce += 1;
             let namespaceHash = namespaceToHash(namespace);
 
-            let currentList : ?[Entry] = namespaceMap.get(namespaceHash);
+            let currentList : ?[EntryGroup] = namespaceMap.get(namespaceHash);
             switch(currentList, dataConfig){
                 case(null, #dataIncluded(data)){
                     Debug.print("no list for namespace " # namespace);
-                    namespaceMap.put(namespaceHash, [{primaryID = primaryID; marker = marker; data = data.data}]);
+                    namespaceMap.put(namespaceHash, [{
+                        entries = [{primaryID = primaryID; marker = marker; data = data.data}];
+                        firstKey = primaryID;
+                        firstMarker = marker;
+                        lastKey = primaryID;
+                        lastMarker = marker;
+                        indexCanister = #this; }]
+                    );
                     if(bCertify == true){
                         certify(namespaceHash, primaryID, marker,data.data);
                     };
@@ -165,19 +183,44 @@ module {
                 case(?currentList, #dataIncluded(data)){
                     Debug.print("found list for namespace " # namespace # " " #  debug_show(currentList.size()));
                     var bIn = false;
-                    let currentListSize = currentList.size();
+                    //todo handle what to do if the list is full(split)
+                    let currentListSize = currentList[0].entries.size();
                     //todo: test inserting in the middle of the list.
+                    //todo: need to not have a chunk go over 2MB
+                    //todo: need to partition
+                    var newMinKey = 0;
+                    var newMinMarker = 0;
+                    var newMaxKey = 0;
+                    var newMaxMarker = 0;
+
                     let newArray = Array.tabulate<Entry>(currentListSize + 1, func(idx){
+                        if(idx == 0){
+                            newMinKey := currentList[0].firstKey;
+                            newMinMarker := currentList[0].firstMarker;
+                        };
+                        if(idx == currentListSize){
+                            newMaxKey := currentList[0].lastKey;
+                            newMaxMarker := currentList[0].lastMarker;
+                        };
                         if(bIn == false){
                             Debug.print("bIn is false");
 
-                            if(idx < currentListSize and (primaryID > currentList[idx].primaryID or (primaryID == currentList[idx].primaryID and marker > currentList[idx].marker))){
+                            if(idx < currentListSize and (primaryID > currentList[0].entries[idx].primaryID or (primaryID == currentList[0].entries[idx].primaryID and marker > currentList[0].entries[idx].marker))){
                                 //Debug.print("keeping the same" # debug_show(idx));
-                                return currentList[idx];
+                                return currentList[0].entries[idx];
                             } else {
 
                                 //Debug.print("found the place to insert and adding an item");
                                 bIn := true;
+
+                                if(idx == 0){
+                                    newMinKey := primaryID;
+                                    newMinMarker := marker;
+                                };
+                                if(idx == currentListSize){
+                                    newMaxKey := primaryID;
+                                    newMaxMarker := marker;
+                                };
                                 return {
                                     primaryID = primaryID;
                                     marker = marker;
@@ -187,12 +230,21 @@ module {
 
                         } else {
                             //Debug.print("bIn is true inserting one back");
-                            return currentList[idx - 1];
+                            return currentList[0].entries[idx - 1];
                         };
                     });
                     Debug.print("inserting new array" # debug_show(newArray.size()));
-                    namespaceMap.put(namespaceHash, newArray);
+                    namespaceMap.put(namespaceHash, [{
+                        entries = newArray;
+                        firstKey = newMinKey;
+                        firstMarker = newMinMarker;
+                        lastKey = newMaxKey;
+                        lastMarker = newMaxMarker;
+                        indexCanister = #this;
+                        }
+                    ]);
                     if(bCertify == true){
+                        //todo: handle certification for splits
                         certify(namespaceHash, primaryID, marker,data.data);
                     };
                 };
@@ -248,7 +300,15 @@ module {
                 case(#dataIncluded(data)){
                     Debug.print(debug_show(data));
                     Debug.print("namespace " # namespace);
-                    namespaceMap.put(namespaceHash, [{primaryID = primaryID; marker = marker; data = data.data}]);
+                    namespaceMap.put(namespaceHash, [{
+                        entries= [{primaryID = primaryID; marker = marker; data = data.data}];
+                        firstKey = primaryID;
+                        firstMarker = marker;
+                        lastKey = primaryID;
+                        lastMarker = marker;
+                        indexCanister = #this;
+                    }]
+                    );
                     //todo: need to remove indexes where this item is pointed to
                     if(bCertify == true){
                         certify(namespaceHash, primaryID, marker,data.data);
@@ -294,7 +354,7 @@ module {
 
         public func __resetTest() : async Bool{
             //todo: restrict to controller
-            namespaceMap := HashMap.HashMap<Nat,[Entry]>(1, Nat.equal, bigNatToNat32);
+            namespaceMap := HashMap.HashMap<Nat,[EntryGroup]>(1, Nat.equal, bigNatToNat32);
             certifiedTree := MerkleTree.empty();
 
             return true;
@@ -374,7 +434,7 @@ module {
             Debug.print("getting logs for hash " # debug_show(namespaceHash) # " " # namespace);
             //todo: makesure there isn't a pointer to another canister
 
-            let currentList : ?[Entry] = namespaceMap.get(namespaceHash);
+            let currentList : ?[EntryGroup] = namespaceMap.get(namespaceHash);
             //Debug.print("found a List");
             switch(currentList){
                 case(null){
@@ -387,7 +447,9 @@ module {
                 };
                 case(?currentList){
                     //todo: this wont work for large lists
-                    Debug.print("logs exist" # debug_show(currentList));
+                    //todo: navigate to proper group
+                    let currentEntries = currentList[0].entries;
+                    Debug.print("logs exist" # debug_show(currentEntries));
                     var resultSize = 0;
                     let responseBuffer = Buffer.Buffer<Entry>(16);
                     if(currentList.size() == 0){
@@ -401,8 +463,8 @@ module {
                     switch(minID, maxID){
                         case(null, null){
                             //no filter
-                            Debug.print("no filter" # debug_show(currentList.size()));
-                            label buildResponse for(thisEntry in currentList.vals()){
+                            Debug.print("no filter" # debug_show(currentEntries.size()));
+                            label buildResponse for(thisEntry in currentEntries.vals()){
                                 //Debug.print(debug_show(lastID) # " " # debug_show(lastMarker) # " " # debug_show(thisEntry.primaryID) # " " # debug_show(thisEntry.marker));
                                 if(thisEntry.primaryID >= lastID and thisEntry.marker > lastMarker){
                                     //Debug.print("prcing entry " # debug_show(thisEntry));
@@ -417,7 +479,7 @@ module {
                         };
                         case(null, ?maxID){
                             Debug.print("no min max");
-                            label buildResponse for(thisEntry in currentList.vals()){
+                            label buildResponse for(thisEntry in currentEntries.vals()){
                                 if(thisEntry.primaryID >= maxID){
                                     break buildResponse;
                                 };
@@ -432,7 +494,7 @@ module {
                         };
                         case(?minID, null){
                             Debug.print("min no max");
-                            label buildResponse for(thisEntry in currentList.vals()){
+                            label buildResponse for(thisEntry in currentEntries.vals()){
                                 if(thisEntry.primaryID < minID){
                                     continue buildResponse;
                                 };
@@ -447,7 +509,7 @@ module {
                         };
                         case(?minID, ?maxID){
                             Debug.print("min and max");
-                            label buildResponse for(thisEntry in currentList.vals()){
+                            label buildResponse for(thisEntry in currentEntries.vals()){
                                 if(thisEntry.primaryID < minID){
                                     continue buildResponse;
                                 };
