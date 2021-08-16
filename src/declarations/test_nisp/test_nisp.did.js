@@ -5,6 +5,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Variant({ 'fail' : IDL.Text, 'success' : IDL.Null })],
         [],
       ),
+    'testGetMenu' : IDL.Func(
+        [],
+        [IDL.Variant({ 'fail' : IDL.Text, 'success' : IDL.Null })],
+        [],
+      ),
     'testGetWitnessEmpty' : IDL.Func(
         [],
         [IDL.Variant({ 'fail' : IDL.Text, 'success' : IDL.Null })],

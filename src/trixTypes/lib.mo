@@ -20,6 +20,7 @@ import Nat16 "mo:base/Nat16";
 import Buffer "mo:base/Buffer";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
+import Prelude "mo:base/Prelude";
 import Debug "mo:base/Debug";
 import Char "mo:base/Char";
 import Blob "mo:base/Blob";
@@ -28,13 +29,65 @@ import Blob "mo:base/Blob";
 module {
 
     //a data chunk should be no larger than 2MB so that it can be
-    public type DataChunk = Buffer.Buffer<Nat8>;
+    public type DataChunk = TrixValueUnstable;
     public type DataZone = Buffer.Buffer<DataChunk>;
     public type Workspace = Buffer.Buffer<DataZone>;
 
-    public type AddressedChunk = (Nat, Nat, [Nat8]);
+    public type Property = {name : Text; value : TrixValue; immutable : Bool};
+    public type PropertyUnstable = {name : Text; value : TrixValueUnstable; immutable : Bool};
 
-    public type AddressedChunkArray = [(Nat, Nat, [Nat8])];
+    //stable
+    public type TrixValue = {
+        #Int : Int;
+        #Int8: Int8;
+        #Int16: Int16;
+        #Int32: Int32;
+        #Int64: Int64;
+        #Nat : Nat;
+        #Nat8 : Nat8;
+        #Nat16 : Nat16;
+        #Nat32 : Nat32;
+        #Nat64 : Nat64;
+        #Float : Float;
+        #Text : Text;
+        #Bool : Bool;
+        #Blob : Blob;
+        #Class : [Property];
+        #Principal : Principal;
+        #Bytes : {
+            #frozen: [Nat8];
+            #thawed: [Nat8]; //need to thaw when going to TrixValueUnstable
+        };
+        #Empty;
+    };
+
+    public type TrixValueUnstable = {
+        #Int :  Int;
+        #Int8: Int8;
+        #Int16: Int16;
+        #Int32: Int32;
+        #Int64: Int64;
+        #Nat : Nat;
+        #Nat8 : Nat8;
+        #Nat16 : Nat16;
+        #Nat32 : Nat32;
+        #Nat64 : Nat64;
+        #Float : Float;
+        #Text : Text;
+        #Bool : Bool;
+        #Blob : Blob;
+        #Class : [PropertyUnstable];
+        #Principal : Principal;
+        #Bytes : {
+            #frozen: [Nat8];
+            #thawed: Buffer.Buffer<Nat8>; //need to thaw when going to TrixValueUnstable
+        };
+        #Empty;
+    };
+
+    public type AddressedChunk = (Nat, Nat, TrixValue);
+
+    public type AddressedChunkArray = [AddressedChunk];
 
     public type AddressedChunkBuffer = Buffer.Buffer<AddressedChunk>;
 
@@ -100,9 +153,82 @@ module {
         return n;
     };
 
+    //public func valueToNat(val : TrixValue) : ?Nat {
+    //    switch(val){
+    //        case(#Nat(val)){?val};
+    //        case(_){null};
+    //    };
+    //};
+
+    public func valueToNat(val : TrixValue) : Nat {
+        switch(val){
+            case(#Nat(val)){val};
+            case(_){assert(false);/*unreachable*/0;};
+        };
+    };
+
+    public func valueToText(val : TrixValue) : Text {
+        switch(val){
+            case(#Text(val)){val};
+            case(_){assert(false);/*unreachable*/"";};
+        };
+    };
+
+    public func valueToPrincipal(val : TrixValue) : Principal {
+        switch(val){
+            case(#Principal(val)){val};
+            case(_){assert(false);/*unreachable*/Principal.fromText("");};
+        };
+    };
+
+    public func valueToBool(val : TrixValue) : Bool {
+        switch(val){
+            case(#Bool(val)){val};
+            case(_){assert(false);/*unreachable*/false;};
+        };
+    };
+
+    //unstable getters
+    public func valueUnstableToNat(val : TrixValueUnstable) : Nat {
+        switch(val){
+            case(#Nat(val)){val};
+            case(_){assert(false);/*unreachable*/0;};
+        };
+    };
+
+    public func valueUnstableToText(val : TrixValueUnstable) : Text {
+        switch(val){
+            case(#Text(val)){val};
+            case(_){assert(false);/*unreachable*/"";};
+        };
+    };
+
+    public func valueUnstableToPrincipal(val : TrixValueUnstable) : Principal {
+        switch(val){
+            case(#Principal(val)){val};
+            case(_){assert(false);/*unreachable*/Principal.fromText("");};
+        };
+    };
+
+    public func valueUnstableToBool(val : TrixValueUnstable) : Bool {
+        switch(val){
+            case(#Bool(val)){val};
+            case(_){assert(false);/*unreachable*/false;};
+        };
+    };
+
     //creates a buffer of type Nat8 from an array of Nat8
     public func toBufferNat8(x : [Nat8]) : Buffer.Buffer<Nat8> {
         let theBuffer = Buffer.Buffer<Nat8>(x.size());
+        //Debug.print(debug_show(x) # " " # debug_show(x.size()));
+        for (thisIndex in Iter.range(0,x.size() - 1)){
+            theBuffer.add(x[thisIndex]);
+        };
+        return theBuffer;
+    };
+
+    public func toBufferValues(x : [TrixValue]) : Buffer.Buffer<TrixValue> {
+        let theBuffer = Buffer.Buffer<TrixValue>(x.size());
         //Debug.print(debug_show(x) # " " # debug_show(x.size()));
         for (thisIndex in Iter.range(0,x.size() - 1)){
             theBuffer.add(x[thisIndex]);
@@ -211,11 +337,210 @@ module {
         return Buffer.Buffer<DataZone>(1);
     };
 
+    public func stabalizeProperty(item : PropertyUnstable) : Property{
+        return {
+            name = item.name;
+            value = stabalizeValue(item.value);
+            immutable = item.immutable;
+        }
+    };
+
+    public func destabalizeProperty(item : Property) : PropertyUnstable{
+        return {
+            name = item.name;
+            value = destablizeValue(item.value);
+            immutable = item.immutable;
+        }
+    };
+
+    public func stabalizeValue(item : TrixValueUnstable) : TrixValue{
+        switch(item){
+            case(#Int(val)){#Int(val)};
+            case(#Int8(val)){#Int8(val)};
+            case(#Int16(val)){#Int16(val)};
+            case(#Int32(val)){#Int32(val)};
+            case(#Int64(val)){#Int64(val)};
+            case(#Nat(val)){#Nat(val)};
+            case(#Nat8(val)){#Nat8(val)};
+            case(#Nat16(val)){#Nat16(val)};
+            case(#Nat32(val)){#Nat32(val)};
+            case(#Nat64(val)){#Nat64(val)};
+            case(#Float(val)){#Float(val)};
+            case(#Text(val)){#Text(val)};
+            case(#Bool(val)){#Bool(val)};
+            case(#Blob(val)){#Blob(val)};
+            case(#Class(val)){
+                #Class(
+                    Array.tabulate<Property>(val.size(), func(idx){
+                        stabalizeProperty(val[idx]);
+                    }));
+            };
+            case(#Principal(val)){#Principal(val)};
+            case(#Bytes(val)){
+                switch(val){
+                    case(#frozen(val)){#Bytes(#frozen(val))};
+                    case(#thawed(val)){#Bytes(#thawed(val.toArray()))};
+                };
+            };
+            case(#Empty){#Empty};
+        }
+    };
+
+    public func destablizeValue(item : TrixValue) : TrixValueUnstable{
+        switch(item){
+            case(#Int(val)){#Int(val)};
+            case(#Int8(val)){#Int8(val)};
+            case(#Int16(val)){#Int16(val)};
+            case(#Int32(val)){#Int32(val)};
+            case(#Int64(val)){#Int64(val)};
+            case(#Nat(val)){#Nat(val)};
+            case(#Nat8(val)){#Nat8(val)};
+            case(#Nat16(val)){#Nat16(val)};
+            case(#Nat32(val)){#Nat32(val)};
+            case(#Nat64(val)){#Nat64(val)};
+            case(#Float(val)){#Float(val)};
+            case(#Text(val)){#Text(val)};
+            case(#Bool(val)){#Bool(val)};
+            case(#Blob(val)){#Blob(val)};
+            case(#Class(val)){
+                #Class(
+                    Array.tabulate<PropertyUnstable>(val.size(), func(idx){
+                        destabalizeProperty(val[idx]);
+                    }));
+            };
+            case(#Principal(val)){#Principal(val)};
+            case(#Bytes(val)){
+                switch(val){
+                    case(#frozen(val)){#Bytes(#frozen(val))};
+                    case(#thawed(val)){#Bytes(#thawed(toBufferNat8(val)))};
+                };
+            };
+            case(#Empty){#Empty};
+        }
+    };
+    public func getValueSize(item : TrixValue) : Nat{
+        switch(item){
+            case(#Int(val)){
+                var a : Nat = 0;
+                var b : Nat = Int.abs(val);
+                var test = true;
+                while test {
+                    a += 1;
+                    b := b / 256;
+                    test := b > 0;
+                };
+                a + 1;//add the sign
+            };
+            case(#Int8(val)){1};
+            case(#Int16(val)){2};
+            case(#Int32(val)){3};
+            case(#Int64(val)){4};
+            case(#Nat(val)){
+                var a : Nat = 0;
+                var b = val;
+                var test = true;
+                while test {
+                    a += 1;
+                    b := b / 256;
+                    test := b > 0;
+                };
+                a;
+            };
+            case(#Nat8(val)){1};
+            case(#Nat16(val)){2};
+            case(#Nat32(val)){3};
+            case(#Nat64(val)){4};
+            case(#Float(val)){4};
+            case(#Text(val)){val.size()*4};
+            case(#Bool(val)){1};
+            case(#Blob(val)){val.size()};
+            case(#Class(val)){
+                var size = 0;
+                for(thisItem in val.vals()){
+                    size += 1 + (thisItem.name.size() * 4) + getValueSize(thisItem.value);
+                };
+                return size;
+            };
+            case(#Principal(val)){principalToBytes(val).size()};//don't like this but need to confirm it is constant
+            case(#Bytes(val)){
+                switch(val){
+                    case(#frozen(val)){val.size()};
+                    case(#thawed(val)){val.size()};
+                };
+            };
+            case(#Empty){0};
+        }
+    };
+
+    public func getValueUnstableSize(item : TrixValueUnstable) : Nat{
+        switch(item){
+            case(#Int(val)){
+                var a : Nat = 0;
+                var b : Nat = Int.abs(val);
+                var test = true;
+                while test {
+                    a += 1;
+                    b := b / 256;
+                    test := b > 0;
+                };
+                a + 1;//add the sign
+            };
+            case(#Int8(val)){1};
+            case(#Int16(val)){2};
+            case(#Int32(val)){3};
+            case(#Int64(val)){4};
+            case(#Nat(val)){
+                var a : Nat = 0;
+                var b = val;
+                var test = true;
+                while test {
+                    a += 1;
+                    b := b / 256;
+                    test := b > 0;
+                };
+                a;
+            };
+            case(#Nat8(val)){1};
+            case(#Nat16(val)){2};
+            case(#Nat32(val)){3};
+            case(#Nat64(val)){4};
+            case(#Float(val)){4};
+            case(#Text(val)){val.size()*4};
+            case(#Bool(val)){1};
+            case(#Blob(val)){val.size()};
+            case(#Class(val)){
+                var size = 0;
+                for(thisItem in val.vals()){
+                    size += 1 + (thisItem.name.size() * 4) + getValueUnstableSize(thisItem.value);
+                };
+                return size;
+            };
+            case(#Principal(val)){principalToBytes(val).size()};//don't like this but need to confirm it is constant
+            case(#Bytes(val)){
+                switch(val){
+                    case(#frozen(val)){val.size()};
+                    case(#thawed(val)){val.size()};
+                };
+            };
+            case(#Empty){0};
+        }
+    };
+
+    public func stablizeValueArray(items : DataZone) : [TrixValue]{
+        let finalItems = Buffer.Buffer<TrixValue>(items.size());
+        for(thisItem in items.vals()){
+            finalItems.add(stabalizeValue(thisItem));
+        };
+        return finalItems.toArray();
+
+
+    };
+
     public func workspaceToAddressedChunkArray(x : Workspace) : AddressedChunkArray {
         var currentZone = 0;
         var currentChunk = 0;
         let result = Array.tabulate<AddressedChunk>(countAddressedChunksInWorkspace(x), func(thisChunk){
-            let thisChunk = (currentZone, currentChunk, x.get(currentZone).get(currentChunk).toArray());
+            let thisChunk = (currentZone, currentChunk, stabalizeValue(x.get(currentZone).get(currentChunk)));
             if(currentChunk == Nat.sub(x.get(currentZone).size(),1)){
                 currentZone += 1;
                 currentChunk := 0;
@@ -273,7 +598,7 @@ module {
             if(thisChunk.1 + 1  <= thisZone.size()){
                     //zone exists
                 Debug.print("chunk exists, replacing");
-                thisZone.put(thisChunk.1, toBufferNat8(thisChunk.2));
+                thisZone.put(thisChunk.1, destablizeValue(thisChunk.2));
             } else {
                 //append zone
 
@@ -282,9 +607,9 @@ module {
                     let newBuffer = if(thisChunk.1 == newChunk){
                         //we know the size
                             //Debug.print("calling to buffer " # debug_show(thisChunk.2));
-                            toBufferNat8(thisChunk.2);
+                            destablizeValue(thisChunk.2);
                         } else {
-                            Buffer.Buffer<Nat8>(1)
+                            #Empty;
                         };
                     thisZone.add(newBuffer);
                 };
@@ -301,8 +626,8 @@ module {
 
     public func getDataZoneSize(dz: DataZone) : Nat {
         var size : Nat = 0;
-        for(thisZone in dz.vals()){
-            size += thisZone.size();
+        for(thisChunk in dz.vals()){
+            size += getValueUnstableSize(thisChunk);
         };
         return size;
     };
@@ -324,7 +649,8 @@ module {
                     //Debug.print("handling " # debug_show(thisZone) # " " # debug_show(thisChunk) );
                     let thisItem = _workspace.get(thisZone).get(thisChunk);
                     //Debug.print("size " # debug_show(thisItem.size()) # " " # debug_show(_maxChunkSize)# " " # debug_show(foundBytes)) ;
-                    if(foundBytes + thisItem.size() > _maxChunkSize)
+                    let newSize = foundBytes + getValueUnstableSize(thisItem);
+                    if( newSize > _maxChunkSize)
                     {
                         //Debug.print("went over bytes");
 
@@ -335,7 +661,7 @@ module {
                         continue chunking;
                     };
                     //Debug.print("adding some bytes");
-                    foundBytes += thisItem.size();
+                    foundBytes := newSize;
                 };
             };
 
@@ -365,8 +691,9 @@ module {
                 for(thisChunk in Iter.range(chunkTracker, _workspace.get(thisZone).size()-1)){
                     Debug.print("handling " # debug_show(thisZone) # " " # debug_show(thisChunk) );
                     let thisItem = _workspace.get(thisZone).get(thisChunk);
-                    Debug.print("size " # debug_show(thisItem.size()) # " " # debug_show(_maxChunkSize)# " " # debug_show(foundBytes)) ;
-                    if(foundBytes + thisItem.size() > _maxChunkSize)
+                    //Debug.print("size " # debug_show(thisItem.size()) # " " # debug_show(_maxChunkSize)# " " # debug_show(foundBytes)) ;
+                    let newSize = foundBytes + getValueUnstableSize(thisItem);
+                    if( newSize > _maxChunkSize)
                     {
                         Debug.print("went over bytes");
                         if(currentChunk == _chunkID){
@@ -382,11 +709,11 @@ module {
                     if(currentChunk == _chunkID){
                         //add it to our return
                         Debug.print("adding item for chunk" # debug_show(_chunkID));
-                        resultBuffer.add((thisZone, thisChunk, thisItem.toArray()));
+                        resultBuffer.add((thisZone, thisChunk, stabalizeValue(thisItem)));
 
                     };
                     //Debug.print("adding some bytes");
-                    foundBytes += thisItem.size();
+                    foundBytes := newSize;
                 };
             };
             Debug.print("got to end");
@@ -399,19 +726,120 @@ module {
     public func getAddressedChunkArraySize(item : AddressedChunkArray) : Nat{
         var size : Nat = 0;
         for(thisItem in item.vals()){
-            size += thisItem.2.size() + 4 + 4; //todo: only works for up to 32 byte adresess...should be fine but verify and document.
+            size += getValueSize(thisItem.2) + 4 + 4; //todo: only works for up to 32 byte adresess...should be fine but verify and document.
         };
         return size;
     };
 
-    public func getDataChunkFromAddressedChunkArray(item : AddressedChunkArray, dataZone: Nat, dataChunk: Nat) : [Nat8]{
+    public func getDataChunkFromAddressedChunkArray(item : AddressedChunkArray, dataZone: Nat, dataChunk: Nat) : TrixValue{
         var size : Nat = 0;
         for(thisItem in item.vals()){
             if(thisItem.0 == dataZone and thisItem.1 == dataChunk){
                 return thisItem.2;
             }
         };
-        return [];
+        return #Empty;
+    };
+
+    public func valueToBytes(val : TrixValue) : [Nat8]{
+        switch(val){
+            case(#Int(val)){intToBytes(val)};
+            case(#Int8(val)){Prelude.nyi()};
+            case(#Int16(val)){Prelude.nyi()};
+            case(#Int32(val)){Prelude.nyi()};
+            case(#Int64(val)){Prelude.nyi()};
+            case(#Nat(val)){natToBytes(val)};
+            case(#Nat8(val)){[val]};
+            case(#Nat16(val)){nat16ToBytes(val)};
+            case(#Nat32(val)){nat32ToBytes(val)};
+            case(#Nat64(val)){Prelude.nyi()};
+            case(#Float(val)){Prelude.nyi()};
+            case(#Text(val)){textToBytes(val)};
+            case(#Bool(val)){boolToBytes(val)};
+            case(#Blob(val)){Blob.toArray(val)};
+            case(#Class(val)){Prelude.nyi()};
+            case(#Principal(val)){principalToBytes(val)};
+            case(#Bytes(val)){
+                switch(val){
+                    case(#frozen(val)){val};
+                    case(#thawed(val)){val};
+                };
+            };
+            case(#Empty){[]};
+        }
+    };
+    //todo: make these for every value type
+    //buffer
+    //nat - 8 16 32 64
+    // int - 8 16 32 64
+    // float
+    ///text
+    // bool
+    // blob
+    public func valueStableAsBytesStable(val : TrixValue) : [Nat8]{
+        switch (val){
+            case(#Bytes(val)){
+                switch(val){
+                    case(#frozen(val)){val};
+                    case(#thawed(val)){val};
+                };
+            };
+            case(#Empty){
+                [];
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                [];
+            };
+        };
+    };
+
+    //todo: make these for every value type
+    //buffer
+    //nat - 8 16 32 64
+    // int - 8 16 32 64
+    // float
+    ///text
+    // bool
+    // blob
+    public func valueUnstableAsBytesStable(val : TrixValueUnstable) : [Nat8]{
+        switch (val){
+            case(#Bytes(val)){
+                switch(val){
+                    case(#frozen(val)){val};
+                    case(#thawed(val)){val.toArray()}
+                };
+            };
+            case(#Empty){
+                [];
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                [];
+            };
+        };
+    };
+
+    public func valueUnstableAsBytesBuffer(val : TrixValueUnstable) : Buffer.Buffer<Nat8>{
+        switch (val){
+            case(#Bytes(val)){
+                switch(val){
+                    case(#frozen(val)){
+                        assert(false);
+                        //unreachable
+                        Buffer.Buffer<Nat8>(1);
+                    };
+                    case(#thawed(val)){val};
+                };
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                Buffer.Buffer<Nat8>(1);
+            };
+        };
     };
 
     public func flattenAddressedChunkArray(data : AddressedChunkArray) : [Nat8]{
@@ -424,13 +852,16 @@ module {
             for(thisbyte in natToBytes(thisItem.1).vals()){
                 accumulator.add(thisbyte);
             };
-            for(thisbyte in thisItem.2.vals()){
-                accumulator.add(thisbyte);
-            };
+
+                for(thisbyte in valueToBytes(thisItem.2).vals()){
+                    accumulator.add(thisbyte);
+                };
+
         };
         return accumulator.toArray();
 
 
     };
+
 
 };

@@ -29,23 +29,23 @@ actor class NIsp() = this {
     func serializeNIspAccount(account: NIspAccount) : TrixTypes.Workspace{
         let ws = TrixTypes.emptyWorkspace();
         let chunks = Buffer.Buffer<TrixTypes.AddressedChunk>(account.apps.size() + 3);
-        chunks.add((0,0,TrixTypes.natToBytes(1))); //version 1
-        chunks.add((1,0, TrixTypes.principalToBytes(account.principal)));
-        chunks.add((2,0, TrixTypes.natToBytes(account.cycles)));
+        chunks.add((0,0,#Nat(1))); //version 1
+        chunks.add((1,0, #Principal(account.principal)));
+        chunks.add((2,0, #Nat(account.cycles)));
         //todo: this won't scale past 2MB of apps
         var appTracker = 0;
         //todo how do we put null items into a datazone?
         if(account.apps.size() > 0){
             for(thisApp in account.apps.vals()){
-                chunks.add((3,appTracker, TrixTypes.textToBytes(thisApp.app)));
-                chunks.add((4,appTracker, TrixTypes.natToBytes(thisApp.cycles)));
-                chunks.add((5,appTracker, TrixTypes.boolToBytes(thisApp.blocked)));
+                chunks.add((3,appTracker, #Text(thisApp.app)));
+                chunks.add((4,appTracker, #Nat(thisApp.cycles)));
+                chunks.add((5,appTracker, #Bool(thisApp.blocked)));
                 appTracker += 1;
             };
         } else {
-            chunks.add((3,0, []));
-            chunks.add((4,0, []));
-            chunks.add((5,0, []));
+            chunks.add((3,0, #Empty));
+            chunks.add((4,0, #Empty));
+            chunks.add((5,0, #Empty));
         };
 
 
@@ -60,26 +60,29 @@ actor class NIsp() = this {
     };
 
     func deSerializeNIspAccountWorkspace(ws: TrixTypes.Workspace) : ?NIspAccount{
-
-        let version = TrixTypes.bytesToNat(ws.get(0).get(0).toArray());
+        let version = TrixTypes.valueUnstableToNat(ws.get(0).get(0));
         if(version == 1){
             let apps = Buffer.Buffer<NIspAppRecord>(ws.get(3).size());
             if(ws.size() > 3){
                 //if the apps arent there we don't need to loop
                 //todo: how do we pull zones out...
                 for(thisApp in Iter.range(0, ws.get(3).size()-1)){
-                    if(ws.get(3).get(thisApp).size() > 0){
+                    let exists = switch(ws.get(3).get(thisApp)){
+                            case(#Empty){false;};
+                            case(_){true;}
+                        };
+                    if(exists == true ){
                         apps.add({
-                            app = TrixTypes.bytesToText(ws.get(3).get(thisApp).toArray());
-                            cycles = TrixTypes.bytesToNat(ws.get(4).get(thisApp).toArray());
-                            blocked = TrixTypes.bytesToBool(ws.get(5).get(thisApp).toArray());
+                            app = TrixTypes.valueUnstableToText(ws.get(3).get(thisApp));
+                            cycles = TrixTypes.valueUnstableToNat(ws.get(4).get(thisApp));
+                            blocked = TrixTypes.valueUnstableToBool(ws.get(5).get(thisApp));
                         });
                     };
                 };
             };
             return ?{
-                principal = TrixTypes.bytesToPrincipal(ws.get(1).get(0).toArray());
-                cycles = TrixTypes.bytesToNat(ws.get(2).get(0).toArray());
+                principal = TrixTypes.valueUnstableToPrincipal(ws.get(1).get(0));
+                cycles = TrixTypes.valueUnstableToNat(ws.get(2).get(0));
                 apps = apps.toArray();
             }
         };

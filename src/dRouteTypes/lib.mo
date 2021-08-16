@@ -16,7 +16,7 @@ import MetaTree "../metatree/lib";
 import Nat16 "mo:base/Nat16";
 import Nat32 "mo:base/Nat32";
 import Nat8 "mo:base/Nat8";
-import PipelinifyTypes "mo:pipelinify/pipelinify/PipelinifyTypes";
+import PipelinifyTypes "../PipelinifyTypes";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";

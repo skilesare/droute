@@ -4,6 +4,10 @@ type test_publisher =
                   fail: text;
                   success;
                 });
+   testGetMenu: () -> (variant {
+                         fail: text;
+                         success;
+                       });
    testGetWitnessEmpty: () -> (variant {
                                  fail: text;
                                  success;

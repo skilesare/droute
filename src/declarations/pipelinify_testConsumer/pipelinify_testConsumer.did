@@ -1,0 +1,76 @@
+type TrixValue = 
+ variant {
+   Blob: blob;
+   Bool: bool;
+   Bytes: variant {
+            frozen: vec nat8;
+            thawed: vec nat8;
+          };
+   Class: vec Property;
+   Empty;
+   Float: float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Principal: principal;
+   Text: text;
+ };
+type Result = 
+ variant {
+   err: ProcessError;
+   ok: ChunkResponse;
+ };
+type Property = 
+ record {
+   immutable: bool;
+   name: text;
+   value: TrixValue;
+ };
+type ProcessError = 
+ record {
+   code: nat;
+   "text": text;
+ };
+type Hash = nat32;
+type Consumer = 
+ service {
+   queryPipelinifyChunk: (ChunkRequest) -> (Result) query;
+   requestPipelinifyChunk: (ChunkRequest) -> (Result);
+   testFullDataSendProcess: (vec AddressedChunk) -> (vec AddressedChunk);
+   testPullChunkProcess: () -> (vec AddressedChunk);
+   testPullChunkUnknownProcess: () -> (vec AddressedChunk);
+   testPullFullProcess: () -> (vec AddressedChunk);
+   testPullFullQueryResponse: () -> (vec AddressedChunk);
+   testPushFullResponse: () -> (vec AddressedChunk);
+ };
+type ChunkResponse = 
+ variant {
+   chunk: vec AddressedChunk;
+   eof: vec AddressedChunk;
+   err: ProcessError;
+   parallel: record {
+               nat;
+               nat;
+               vec AddressedChunk;
+             };
+ };
+type ChunkRequest = 
+ record {
+   chunkID: nat;
+   event: opt text;
+   sourceIdentifier: opt Hash;
+ };
+type AddressedChunk = 
+ record {
+   nat;
+   nat;
+   TrixValue;
+ };
+service : () -> Consumer

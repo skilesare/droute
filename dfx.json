@@ -30,6 +30,18 @@
         "nisp"
       ]
     },
+    "pipelinify_testRunner": {
+      "main": "src/tests/_pipelinifyTest-Runner.mo",
+      "type": "motoko"
+    },
+    "pipelinify_testConsumer": {
+      "main": "src/tests/_pipelinifyTest-Consumer.mo",
+      "type": "motoko"
+    },
+    "pipelinify_testProcessor": {
+      "main": "src/tests/_pipelinifyTest-Processor.mo",
+      "type": "motoko"
+    },
 
     "droute_assets": {
       "dependencies": [

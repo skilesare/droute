@@ -1,4 +1,6 @@
 export const idlFactory = ({ IDL }) => {
+  const TrixValue = IDL.Rec();
+  const TrixValue__1 = IDL.Rec();
   const ValidSourceOptions = IDL.Variant({
     'blacklist' : IDL.Vec(IDL.Principal),
     'whitelist' : IDL.Vec(IDL.Principal),
@@ -9,9 +11,38 @@ export const idlFactory = ({ IDL }) => {
     'validSources' : ValidSourceOptions,
     'eventType' : IDL.Text,
   });
-  const AddressedChunkArray = IDL.Vec(
-    IDL.Tuple(IDL.Nat, IDL.Nat, IDL.Vec(IDL.Nat8))
+  const Property__1 = IDL.Record({
+    'value' : TrixValue__1,
+    'name' : IDL.Text,
+    'immutable' : IDL.Bool,
+  });
+  TrixValue__1.fill(
+    IDL.Variant({
+      'Int' : IDL.Int,
+      'Nat' : IDL.Nat,
+      'Empty' : IDL.Null,
+      'Nat16' : IDL.Nat16,
+      'Nat32' : IDL.Nat32,
+      'Nat64' : IDL.Nat64,
+      'Blob' : IDL.Vec(IDL.Nat8),
+      'Bool' : IDL.Bool,
+      'Int8' : IDL.Int8,
+      'Nat8' : IDL.Nat8,
+      'Text' : IDL.Text,
+      'Bytes' : IDL.Variant({
+        'thawed' : IDL.Vec(IDL.Nat8),
+        'frozen' : IDL.Vec(IDL.Nat8),
+      }),
+      'Int16' : IDL.Int16,
+      'Int32' : IDL.Int32,
+      'Int64' : IDL.Int64,
+      'Float' : IDL.Float64,
+      'Principal' : IDL.Principal,
+      'Class' : IDL.Vec(Property__1),
+    })
   );
+  const AddressedChunk__1 = IDL.Tuple(IDL.Nat, IDL.Nat, TrixValue__1);
+  const AddressedChunkArray = IDL.Vec(AddressedChunk__1);
   const Entry = IDL.Record({
     'data' : AddressedChunkArray,
     'primaryID' : IDL.Nat,
@@ -23,7 +54,14 @@ export const idlFactory = ({ IDL }) => {
       'lastID' : IDL.Opt(IDL.Nat),
       'lastMarker' : IDL.Opt(IDL.Nat),
     }),
-    'pointer' : IDL.Record({ 'canister' : IDL.Principal }),
+    'pointer' : IDL.Record({
+      'maxID' : IDL.Opt(IDL.Nat),
+      'minID' : IDL.Opt(IDL.Nat),
+      'lastID' : IDL.Nat,
+      'lastMarker' : IDL.Nat,
+      'canister' : IDL.Principal,
+      'namespace' : IDL.Text,
+    }),
   });
   const ProcessQueueResponse = IDL.Record({
     'queueLength' : IDL.Nat,
@@ -35,7 +73,37 @@ export const idlFactory = ({ IDL }) => {
     'err' : PublishError,
   });
   const Hash = IDL.Nat32;
-  const AddressedChunk = IDL.Tuple(IDL.Nat, IDL.Nat, IDL.Vec(IDL.Nat8));
+  const Property = IDL.Record({
+    'value' : TrixValue,
+    'name' : IDL.Text,
+    'immutable' : IDL.Bool,
+  });
+  TrixValue.fill(
+    IDL.Variant({
+      'Int' : IDL.Int,
+      'Nat' : IDL.Nat,
+      'Empty' : IDL.Null,
+      'Nat16' : IDL.Nat16,
+      'Nat32' : IDL.Nat32,
+      'Nat64' : IDL.Nat64,
+      'Blob' : IDL.Vec(IDL.Nat8),
+      'Bool' : IDL.Bool,
+      'Int8' : IDL.Int8,
+      'Nat8' : IDL.Nat8,
+      'Text' : IDL.Text,
+      'Bytes' : IDL.Variant({
+        'thawed' : IDL.Vec(IDL.Nat8),
+        'frozen' : IDL.Vec(IDL.Nat8),
+      }),
+      'Int16' : IDL.Int16,
+      'Int32' : IDL.Int32,
+      'Int64' : IDL.Int64,
+      'Float' : IDL.Float64,
+      'Principal' : IDL.Principal,
+      'Class' : IDL.Vec(Property),
+    })
+  );
+  const AddressedChunk = IDL.Tuple(IDL.Nat, IDL.Nat, TrixValue);
   const ChunkRequest = IDL.Record({
     'sourceIdentifier' : IDL.Opt(Hash),
     'chunkID' : IDL.Nat,

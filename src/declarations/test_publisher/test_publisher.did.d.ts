@@ -1,5 +1,5 @@
 import type { Principal } from '@dfinity/principal';
-export type AddressedChunk = [bigint, bigint, Array<number>];
+export type AddressedChunk = [bigint, bigint, TrixValue];
 export interface ChunkRequest {
   'sourceIdentifier' : [] | [Hash__1],
   'chunkID' : bigint,
@@ -45,9 +45,32 @@ export type NotifyResponse = { 'ok' : boolean } |
   { 'err' : PublishError };
 export type Principal = Principal;
 export interface ProcessError { 'code' : bigint, 'text' : string }
+export interface Property {
+  'value' : TrixValue,
+  'name' : string,
+  'immutable' : boolean,
+}
 export interface PublishError { 'code' : bigint, 'text' : string }
 export type Result = { 'ok' : ChunkResponse } |
   { 'err' : ProcessError };
+export type TrixValue = { 'Int' : bigint } |
+  { 'Nat' : bigint } |
+  { 'Empty' : null } |
+  { 'Nat16' : number } |
+  { 'Nat32' : number } |
+  { 'Nat64' : bigint } |
+  { 'Blob' : Array<number> } |
+  { 'Bool' : boolean } |
+  { 'Int8' : number } |
+  { 'Nat8' : number } |
+  { 'Text' : string } |
+  { 'Bytes' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
+  { 'Int16' : number } |
+  { 'Int32' : number } |
+  { 'Int64' : bigint } |
+  { 'Float' : number } |
+  { 'Principal' : Principal } |
+  { 'Class' : Array<Property> };
 export type Value = Array<number>;
 export type Witness = { 'labeled' : [Key, Witness] } |
   { 'fork' : [Witness, Witness] } |

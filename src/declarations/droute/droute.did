@@ -4,6 +4,54 @@ type ValidSourceOptions =
    dynamic: record {canister: text;};
    whitelist: vec principal;
  };
+type TrixValue__1 = 
+ variant {
+   Blob: blob;
+   Bool: bool;
+   Bytes: variant {
+            frozen: vec nat8;
+            thawed: vec nat8;
+          };
+   Class: vec Property__1;
+   Empty;
+   Float: float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Principal: principal;
+   Text: text;
+ };
+type TrixValue = 
+ variant {
+   Blob: blob;
+   Bool: bool;
+   Bytes: variant {
+            frozen: vec nat8;
+            thawed: vec nat8;
+          };
+   Class: vec Property;
+   Empty;
+   Float: float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Principal: principal;
+   Text: text;
+ };
 type SubscriptionThrottle = variant {notImplemented;};
 type SubscriptionResponse = 
  record {
@@ -46,7 +94,15 @@ type ReadResponse =
            lastID: opt nat;
            lastMarker: opt nat;
          };
-   pointer: record {canister: principal;};
+   pointer:
+    record {
+      canister: principal;
+      lastID: nat;
+      lastMarker: nat;
+      maxID: opt nat;
+      minID: opt nat;
+      namespace: text;
+    };
  };
 type PublishStatus = 
  variant {
@@ -69,6 +125,18 @@ type PublishError =
  record {
    code: nat;
    "text": text;
+ };
+type Property__1 = 
+ record {
+   immutable: bool;
+   name: text;
+   value: TrixValue__1;
+ };
+type Property = 
+ record {
+   immutable: bool;
+   name: text;
+   value: TrixValue;
  };
 type ProcessQueueResponse = 
  record {
@@ -149,16 +217,17 @@ type ChunkRequest =
    event: opt text;
    sourceIdentifier: opt Hash;
  };
-type AddressedChunkArray = 
- vec record {
-       nat;
-       nat;
-       vec nat8;
-     };
+type AddressedChunk__1 = 
+ record {
+   nat;
+   nat;
+   TrixValue__1;
+ };
+type AddressedChunkArray = vec AddressedChunk__1;
 type AddressedChunk = 
  record {
    nat;
    nat;
-   vec nat8;
+   TrixValue;
  };
 service : () -> DRoute

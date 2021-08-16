@@ -5,7 +5,8 @@ export type GetStatusResponse = { 'cycleBalance' : [bigint, Witness] } |
 export type Hash = Array<number>;
 export type Key = Array<number>;
 export interface NIsp {
-  'getStatus' : () => Promise<Result>,
+  '__resetTest' : () => Promise<boolean>,
+  'getStatus' : (arg_0: [] | [Array<string>]) => Promise<Result>,
   'updateCycles' : (arg_0: Principal, arg_1: bigint) => Promise<boolean>,
 }
 export interface PublishError { 'code' : bigint, 'text' : string }

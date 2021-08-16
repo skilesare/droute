@@ -25,7 +25,8 @@ type PublishError =
  };
 type NIsp = 
  service {
-   getStatus: () -> (Result);
+   __resetTest: () -> (bool);
+   getStatus: (opt vec text) -> (Result) query;
    updateCycles: (principal, nat) -> (bool);
  };
 type Key = blob;

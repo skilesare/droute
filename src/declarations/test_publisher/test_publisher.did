@@ -30,6 +30,30 @@ type Witness =
    pruned: Hash;
  };
 type Value = blob;
+type TrixValue = 
+ variant {
+   Blob: blob;
+   Bool: bool;
+   Bytes: variant {
+            frozen: vec nat8;
+            thawed: vec nat8;
+          };
+   Class: vec Property;
+   Empty;
+   Float: float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Principal: principal;
+   Text: text;
+ };
 type Result = 
  variant {
    err: ProcessError;
@@ -39,6 +63,12 @@ type PublishError =
  record {
    code: nat;
    "text": text;
+ };
+type Property = 
+ record {
+   immutable: bool;
+   name: text;
+   value: TrixValue;
  };
 type ProcessError = 
  record {
@@ -119,6 +149,6 @@ type AddressedChunk =
  record {
    nat;
    nat;
-   vec nat8;
+   TrixValue;
  };
 service : () -> test_publisher

@@ -1,6 +1,7 @@
 import type { Principal } from '@dfinity/principal';
 export interface test_publisher {
   'test' : () => Promise<{ 'fail' : string } | { 'success' : null }>,
+  'testGetMenu' : () => Promise<{ 'fail' : string } | { 'success' : null }>,
   'testGetWitnessEmpty' : () => Promise<
       { 'fail' : string } |
         { 'success' : null }

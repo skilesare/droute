@@ -23,7 +23,8 @@ export const idlFactory = ({ IDL }) => {
     'err' : PublishError,
   });
   const NIsp = IDL.Service({
-    'getStatus' : IDL.Func([], [Result], []),
+    '__resetTest' : IDL.Func([], [IDL.Bool], []),
+    'getStatus' : IDL.Func([IDL.Opt(IDL.Vec(IDL.Text))], [Result], ['query']),
     'updateCycles' : IDL.Func([IDL.Principal, IDL.Nat], [IDL.Bool], []),
   });
   return NIsp;

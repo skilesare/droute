@@ -53,7 +53,7 @@ actor class test_publisher() = this{
             eventType = "test123";
             userID = 1;
             dataConfig = #dataIncluded{
-                data = [(0,0,[1:Nat8,2:Nat8,3:Nat8,4:Nat8])]};
+                data = [(0,0,#Bytes(#frozen([1:Nat8,2:Nat8,3:Nat8,4:Nat8])) : TrixTypes.TrixValue)]};
 
         };
 
@@ -133,7 +133,7 @@ actor class test_publisher() = this{
             eventType = "test123";
             userID = 2;
             dataConfig = #dataIncluded{
-            data = [(0,0,[1:Nat8,2:Nat8,3:Nat8,4:Nat8])]};
+            data = [(0,0,#Bytes(#frozen([1:Nat8,2:Nat8,3:Nat8,4:Nat8])))]};
         });
 
         Debug.print("pubResult " # debug_show(pubResult));

@@ -130,28 +130,28 @@ module {
     };
 
     public func serializeBroadcastLogItem(item : DRouteTypes.BroadcastLogItem) : TrixTypes.AddressedChunkArray{
-      let result = Buffer.Buffer<(Nat, Nat, [Nat8])>(16);
-      result.add((0,0,TrixTypes.textToBytes("com.droute.types.broadcastLogItem"))); //data type
-      result.add((1,0,TrixTypes.natToBytes(1))); //version
-      result.add((2,0,TrixTypes.textToBytes(item.eventType))); //eventType
-      result.add((3,0,TrixTypes.natToBytes(item.eventDRouteID))); //eventDRouteID
-      result.add((4,0,TrixTypes.natToBytes(item.eventUserID))); //eventUserID
-      result.add((5,0,TrixTypes.principalToBytes(item.destination))); //destination
-      result.add((6,0,TrixTypes.principalToBytes(item.processor))); //processor
-      result.add((7,0,TrixTypes.natToBytes(item.subscriptionUserID))); //subscriptionUserID
-      result.add((8,0,TrixTypes.natToBytes(item.subscriptionDRoutID))); //subscriptionDRoutID
-      result.add((9,0,TrixTypes.natToBytes(item.index))); //index
-      result.add((10,0,TrixTypes.natToBytes(item.heapCycleID))); //heapCycleID
-      result.add((11,0,TrixTypes.intToBytes(item.dateSent))); //dateSent
-      result.add((12,0,TrixTypes.boolToBytes(item.notifyResponse))); //response
+      let result = Buffer.Buffer<(Nat, Nat, TrixTypes.TrixValue)>(16);
+      result.add((0,0,#Text("com.droute.types.broadcastLogItem"))); //data type
+      result.add((1,0,#Nat(1))); //version
+      result.add((2,0,#Text(item.eventType))); //eventType
+      result.add((3,0,#Nat(item.eventDRouteID))); //eventDRouteID
+      result.add((4,0,#Nat(item.eventUserID))); //eventUserID
+      result.add((5,0,#Principal(item.destination))); //destination
+      result.add((6,0,#Principal(item.processor))); //processor
+      result.add((7,0,#Nat(item.subscriptionUserID))); //subscriptionUserID
+      result.add((8,0,#Nat(item.subscriptionDRoutID))); //subscriptionDRoutID
+      result.add((9,0,#Nat(item.index))); //index
+      result.add((10,0,#Nat(item.heapCycleID))); //heapCycleID
+      result.add((11,0,#Int(item.dateSent))); //dateSent
+      result.add((12,0,#Bool(item.notifyResponse))); //response
       switch(item.error){
         case(null){
-          result.add((13,0,[]));
-          result.add((13,1,[]));
+          result.add((13,0,#Empty));
+          result.add((13,1,#Empty));
         };
         case(?aErr){
-          result.add((13,0,TrixTypes.natToBytes(aErr.code))); //errcode
-          result.add((13,1,TrixTypes.textToBytes(aErr.text))); //text error
+          result.add((13,0,#Nat(aErr.code))); //errcode
+          result.add((13,1,#Text(aErr.text))); //text error
         };
       };
 
@@ -161,32 +161,38 @@ module {
     };
 
     public func deserializeBroadcastLogItem(item : TrixTypes.AddressedChunkArray) :  ?DRouteTypes.BroadcastLogItem{
-      let version = TrixTypes.bytesToNat(item[1].2);
-      if(version == 1){
-        return ?{
 
-          eventType =TrixTypes.bytesToText(item[2].2); //eventType
-          eventDRouteID =TrixTypes.bytesToNat(item[3].2); //eventDRouteID
-          eventUserID =TrixTypes.bytesToNat(item[4].2); //eventUserID
-          destination =TrixTypes.bytesToPrincipal(item[5].2); //destination
-          processor =TrixTypes.bytesToPrincipal(item[6].2); //processor
-          subscriptionUserID =TrixTypes.bytesToNat(item[7].2); //subscriptionUserID
-          subscriptionDRoutID =TrixTypes.bytesToNat(item[8].2); //subscriptionDRoutID
-          index =TrixTypes.bytesToNat(item[9].2); //index
-          heapCycleID =TrixTypes.bytesToNat(item[10].2); //heapCycleID
-          dateSent =TrixTypes.bytesToNat(item[11].2); //datesent
-          notifyResponse = TrixTypes.bytesToBool(item[12].2); //notifyResponse
+        let version : Nat = TrixTypes.valueToNat(item[1].2);
 
-          error = if(item[13].2.size() > 0){
-            ?{code = TrixTypes.bytesToNat(item[13].2);
-              text = TrixTypes.bytesToText(item[14].2)}
+            if(version == 1){
+              return ?{
+
+                eventType = TrixTypes.valueToText(item[2].2); //eventType
+                eventDRouteID =TrixTypes.valueToNat(item[3].2); //eventDRouteID
+                eventUserID =TrixTypes.valueToNat(item[4].2); //eventUserID
+                destination =TrixTypes.valueToPrincipal(item[5].2); //destination
+                processor =TrixTypes.valueToPrincipal(item[6].2); //processor
+                subscriptionUserID =TrixTypes.valueToNat(item[7].2); //subscriptionUserID
+                subscriptionDRoutID =TrixTypes.valueToNat(item[8].2); //subscriptionDRoutID
+                index =TrixTypes.valueToNat(item[9].2); //index
+                heapCycleID =TrixTypes.valueToNat(item[10].2); //heapCycleID
+                dateSent =TrixTypes.valueToNat(item[11].2); //datesent
+                notifyResponse = TrixTypes.valueToBool(item[12].2); //notifyResponse
+                error = switch(item[13].2){
+                    case(#Empty){
+                      null;
+                    };
+                    case(_){
+                      ?{code = TrixTypes.valueToNat(item[13].2);
+                      text = TrixTypes.valueToText(item[14].2)};
+                    };
+
+                  };
+
+              };
             } else {
-              null
+              return null;
             };
-          };
-      };
-
-      return null;
     };
 
 

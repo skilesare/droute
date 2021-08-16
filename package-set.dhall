@@ -5,11 +5,7 @@ let Package =
 let
   -- This is where you can add your own packages to the package-set
   additions =
-    [{ name = "pipelinify"
-   , repo = "file:///Users/austin/Documents/Dropbox/development/Rivvir/NISP/pipelinify"
-   , version = "Parallel"
-   , dependencies = ["base"]
-   }] : List Package
+    [] : List Package
 
 let
   {- This is where you can override existing packages in the package-set

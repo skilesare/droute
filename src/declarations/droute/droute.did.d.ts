@@ -1,6 +1,7 @@
 import type { Principal } from '@dfinity/principal';
-export type AddressedChunk = [bigint, bigint, Array<number>];
-export type AddressedChunkArray = Array<[bigint, bigint, Array<number>]>;
+export type AddressedChunk = [bigint, bigint, TrixValue];
+export type AddressedChunkArray = Array<AddressedChunk__1>;
+export type AddressedChunk__1 = [bigint, bigint, TrixValue__1];
 export interface ChunkRequest {
   'sourceIdentifier' : [] | [Hash],
   'chunkID' : bigint,
@@ -62,6 +63,16 @@ export interface ProcessQueueResponse {
   'queueLength' : bigint,
   'eventsProcessed' : bigint,
 }
+export interface Property {
+  'value' : TrixValue,
+  'name' : string,
+  'immutable' : boolean,
+}
+export interface Property__1 {
+  'value' : TrixValue__1,
+  'name' : string,
+  'immutable' : boolean,
+}
 export interface PublishError { 'code' : bigint, 'text' : string }
 export interface PublishError__1 { 'code' : bigint, 'text' : string }
 export interface PublishResponse {
@@ -79,7 +90,16 @@ export type ReadResponse = {
       'lastMarker' : [] | [bigint],
     }
   } |
-  { 'pointer' : { 'canister' : Principal } };
+  {
+    'pointer' : {
+      'maxID' : [] | [bigint],
+      'minID' : [] | [bigint],
+      'lastID' : bigint,
+      'lastMarker' : bigint,
+      'canister' : Principal,
+      'namespace' : string,
+    }
+  };
 export type Result = { 'ok' : SubscriptionResponse } |
   { 'err' : PublishError };
 export type Result_1 = { 'ok' : PublishResponse } |
@@ -101,6 +121,42 @@ export interface SubscriptionResponse {
   'subscriptionID' : bigint,
 }
 export type SubscriptionThrottle = { 'notImplemented' : null };
+export type TrixValue = { 'Int' : bigint } |
+  { 'Nat' : bigint } |
+  { 'Empty' : null } |
+  { 'Nat16' : number } |
+  { 'Nat32' : number } |
+  { 'Nat64' : bigint } |
+  { 'Blob' : Array<number> } |
+  { 'Bool' : boolean } |
+  { 'Int8' : number } |
+  { 'Nat8' : number } |
+  { 'Text' : string } |
+  { 'Bytes' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
+  { 'Int16' : number } |
+  { 'Int32' : number } |
+  { 'Int64' : bigint } |
+  { 'Float' : number } |
+  { 'Principal' : Principal } |
+  { 'Class' : Array<Property> };
+export type TrixValue__1 = { 'Int' : bigint } |
+  { 'Nat' : bigint } |
+  { 'Empty' : null } |
+  { 'Nat16' : number } |
+  { 'Nat32' : number } |
+  { 'Nat64' : bigint } |
+  { 'Blob' : Array<number> } |
+  { 'Bool' : boolean } |
+  { 'Int8' : number } |
+  { 'Nat8' : number } |
+  { 'Text' : string } |
+  { 'Bytes' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
+  { 'Int16' : number } |
+  { 'Int32' : number } |
+  { 'Int64' : bigint } |
+  { 'Float' : number } |
+  { 'Principal' : Principal } |
+  { 'Class' : Array<Property__1> };
 export type ValidSourceOptions = { 'blacklist' : Array<Principal> } |
   { 'whitelist' : Array<Principal> } |
   { 'dynamic' : { 'canister' : string } };

@@ -1,0 +1,10 @@
+type pipelinify_runner = 
+ service {
+   Test: () -> (Result);
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: text;
+ };
+service : () -> pipelinify_runner

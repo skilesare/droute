@@ -21,6 +21,7 @@ import Buffer "mo:base/Buffer";
 
 import Array "mo:base/Array";
 import Debug "mo:base/Debug";
+import Option "mo:base/Option";
 
 import HashMap "mo:base/HashMap";
 import TrixTypes "../TrixTypes";
@@ -28,7 +29,7 @@ import SHA256 "../dRouteUtilities/SHA256";
 import MerkleTree "../dRouteUtilities/MerkleTree";
 import CertifiedData "mo:base/CertifiedData";
 
-import PipelinifyTypes "mo:pipelinify/pipelinify/PipelinifyTypes";
+import PipelinifyTypes "../PipelinifyTypes";
 
 module {
     type AddressedChunkArray = TrixTypes.AddressedChunkArray;
@@ -216,7 +217,7 @@ module {
 
                     for(thisIndex in index.vals()){
                         Debug.print(debug_show(thisIndex));
-                        let metaData = calcIndexMeta(thisIndex, data.data);
+                        let metaData = Option.unwrap(calcIndexMeta(thisIndex, data.data));//should trap if not configured correctly
                         let newNamespace = thisIndex.namespace # ".__index." # metaData.postFix;
                         //not currently awaiting the markers.
                         //todo: need to change to writing a pointer to original data...or maybe it is an index config
@@ -275,7 +276,7 @@ module {
 
                     for(thisIndex in index.vals()){
                         Debug.print(debug_show(thisIndex));
-                        let metaData = calcIndexMeta(thisIndex, data.data);
+                        let metaData = Option.unwrap(calcIndexMeta(thisIndex, data.data));
                         let newNamespace = thisIndex.namespace # ".__index." # metaData.postFix;
                         //not currently awaiting the markers.
                         //todo: need to erase old index
@@ -302,24 +303,24 @@ module {
 
 
 
-        func calcIndexMeta(index : MetaTreeIndex, data : AddressedChunkArray) : {primaryID : Nat; postFix : Text} {
-
+        func calcIndexMeta(index : MetaTreeIndex, data : AddressedChunkArray) : ?{primaryID : Nat; postFix : Text} {
+            let val = TrixTypes.getDataChunkFromAddressedChunkArray(data, index.dataZone, index.dataChunk);
             let meta = switch(index.indexType){
                 case(#Nat){
-                    let n = TrixTypes.bytesToNat(TrixTypes.getDataChunkFromAddressedChunkArray(data, index.dataZone, index.dataChunk));
+                    let n = switch(val){case(#Nat(val)){val};case(_){return null;}};
                     {postFix = Nat.toText(n);
                      primaryID = n
                     };
                 };
                 case(#Int){
                     //todo: does not support negative ints. Maybe add a billionty to private id?
-                    let n = TrixTypes.bytesToInt(TrixTypes.getDataChunkFromAddressedChunkArray(data, index.dataZone, index.dataChunk));
+                    let n = switch(val){case(#Int(val)){val};case(_){return null;}};
 
                     {postFix = Int.toText(n);
                     primaryID = Int.abs(n)};
                 };
                 case(#Text){
-                    let n = SHA256.sha256(TrixTypes.getDataChunkFromAddressedChunkArray(data, index.dataZone, index.dataChunk));
+                    let n = SHA256.sha256(TrixTypes.textToBytes(switch(val){case(#Text(val)){val};case(_){return null;}}));
                     {postFix = TrixTypes.bytesToText(n);
                     primaryID = TrixTypes.bytesToNat(n)};
                 };
@@ -329,7 +330,7 @@ module {
                 };
             };
 
-            return meta;
+            return ?meta;
         };
 
 

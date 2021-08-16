@@ -1,0 +1,144 @@
+type TrixValue = 
+ variant {
+   Blob: blob;
+   Bool: bool;
+   Bytes: variant {
+            frozen: vec nat8;
+            thawed: vec nat8;
+          };
+   Class: vec Property;
+   Empty;
+   Float: float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Principal: principal;
+   Text: text;
+ };
+type Result__1 = 
+ variant {
+   err: ProcessError;
+   ok: ChunkResponse;
+ };
+type Result = 
+ variant {
+   err: ProcessError;
+   ok: ProcessResponse;
+ };
+type ResponseConfig = record {responseMode: variant {
+                                              pull;
+                                              push;
+                                            };};
+type Property = 
+ record {
+   immutable: bool;
+   name: text;
+   value: TrixValue;
+ };
+type Processor = 
+ service {
+   process: (ProcessRequest) -> (Result);
+   pushChunk: (ChunkPush) -> (Result);
+ };
+type ProcessType = 
+ variant {
+   error;
+   parallel: record {
+               stepMap: vec bool;
+               steps: nat;
+             };
+   sequential: nat;
+   unconfigured;
+ };
+type ProcessResponse = 
+ variant {
+   dataIncluded: record {payload: vec AddressedChunk;};
+   intakeNeeded:
+    record {
+      chunkMap: vec bool;
+      currentChunks: nat;
+      pipeInstanceID: PipeInstanceID;
+      totalChunks: nat;
+    };
+   outtakeNeeded: record {pipeInstanceID: PipeInstanceID;};
+   stepProcess: record {
+                  pipeInstanceID: PipeInstanceID;
+                  status: ProcessType;
+                };
+ };
+type ProcessRequest = 
+ record {
+   dataConfig: DataConfig;
+   event: opt text;
+   executionConfig: ExecutionConfig;
+   responseConfig: ResponseConfig;
+ };
+type ProcessError = 
+ record {
+   code: nat;
+   "text": text;
+ };
+type PipeInstanceID = nat32;
+type Hash = nat32;
+type ExecutionConfig = record {executionMode: variant {
+                                                manual;
+                                                onLoad;
+                                              };};
+type DataSource = 
+ service {
+   queryPipelinifyChunk: (ChunkRequest) -> (Result__1) query;
+   requestPipelinifyChunk: (ChunkRequest) -> (Result__1);
+ };
+type DataConfig = 
+ variant {
+   dataIncluded: record {data: vec AddressedChunk;};
+   internal;
+   pull:
+    record {
+      data: opt vec AddressedChunk;
+      mode: variant {
+              pull;
+              pullQuery;
+            };
+      sourceActor: opt DataSource;
+      sourceIdentifier: opt Hash;
+      totalChunks: opt nat32;
+    };
+   push;
+ };
+type ChunkResponse = 
+ variant {
+   chunk: vec AddressedChunk;
+   eof: vec AddressedChunk;
+   err: ProcessError;
+   parallel: record {
+               nat;
+               nat;
+               vec AddressedChunk;
+             };
+ };
+type ChunkRequest = 
+ record {
+   chunkID: nat;
+   event: opt text;
+   sourceIdentifier: opt Hash;
+ };
+type ChunkPush = 
+ record {
+   chunk: ChunkResponse;
+   pipeInstanceID: PipeInstanceID;
+ };
+type AddressedChunk = 
+ record {
+   nat;
+   nat;
+   TrixValue;
+ };
+service : () -> Processor

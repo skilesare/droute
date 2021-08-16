@@ -29,7 +29,7 @@ import MerkleTree "../dRouteUtilities/MerkleTree";
 import CertifiedData "mo:base/CertifiedData";
 //import Result "mo:base/Result";
 
-import PipelinifyTypes "mo:pipelinify/pipelinify/PipelinifyTypes";
+import PipelinifyTypes "../PipelinifyTypes";
 
 module {
 
