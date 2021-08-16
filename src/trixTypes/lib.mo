@@ -862,6 +862,12 @@ module {
         return result;
     };
 
+    public func initDataZone(val : TrixValueUnstable) : DataZone{
+        let result = Buffer.Buffer<TrixValueUnstable>(1);
+        result.add(val);
+        return result;
+    };
+
     public func valueUnstableAsNat16(val : TrixValueUnstable) : Nat16{
         switch (val){
             case(#Nat16(val)){
