@@ -842,6 +842,45 @@ module {
         };
     };
 
+    public func valueUnstableAsNat16(val : TrixValueUnstable) : Nat16{
+        switch (val){
+            case(#Nat16(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
+    public func valueUnstableAsNat32(val : TrixValueUnstable) : Nat32{
+        switch (val){
+            case(#Nat32(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
+    public func valueUnstableAsNat64(val : TrixValueUnstable) : Nat64{
+        switch (val){
+            case(#Nat64(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
     public func flattenAddressedChunkArray(data : AddressedChunkArray) : [Nat8]{
         let accumulator : Buffer.Buffer<Nat8> = Buffer.Buffer<Nat8>(getAddressedChunkArraySize(data));
         for(thisItem in data.vals()){
