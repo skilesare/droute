@@ -337,6 +337,10 @@ module {
         return Buffer.Buffer<DataZone>(1);
     };
 
+    public func initWorkspace(size : Nat) : Workspace {
+        return Buffer.Buffer<DataZone>(size);
+    };
+
     public func stabalizeProperty(item : PropertyUnstable) : Property{
         return {
             name = item.name;
