@@ -267,12 +267,12 @@ module {
         return result;
     };
 
-    public func principalToBytes(_principal: Principal.Principal) : [Nat8]{
+    public func principalToBytes(_principal: Principal) : [Nat8]{
         return textToBytes(Principal.toText(_principal));
     };
 
     //todo: this should go to Blob once they add Principal.fromBlob
-    public func bytesToPrincipal(_bytes: [Nat8]) : Principal.Principal{
+    public func bytesToPrincipal(_bytes: [Nat8]) : Principal{
         return Principal.fromText(bytesToText(_bytes));
     };
 
