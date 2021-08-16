@@ -52,7 +52,9 @@ export const idlFactory = ({ IDL }) => {
     'data' : IDL.Record({
       'data' : IDL.Vec(Entry),
       'lastID' : IDL.Opt(IDL.Nat),
+      'firstID' : IDL.Opt(IDL.Nat),
       'lastMarker' : IDL.Opt(IDL.Nat),
+      'firstMarker' : IDL.Opt(IDL.Nat),
     }),
     'pointer' : IDL.Record({
       'maxID' : IDL.Opt(IDL.Nat),

@@ -851,6 +851,19 @@ module {
         };
     };
 
+    public func valueStableAsPrincipal(val : TrixValue) : Principal{
+        switch (val){
+            case(#Principal(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                Principal.fromText("");
+            };
+        };
+    };
+
     //todo: make these for every value type
     //buffer
     //nat - 8 16 32 64
@@ -968,6 +981,19 @@ module {
                 assert(false);
                 //unreachable
                 0;
+            };
+        };
+    };
+
+    public func valueUnstableAsPrincipal(val : TrixValueUnstable) : Principal{
+        switch (val){
+            case(#Principal(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                Principal.fromText("");
             };
         };
     };

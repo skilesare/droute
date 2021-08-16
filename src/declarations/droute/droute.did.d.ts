@@ -87,7 +87,9 @@ export type ReadResponse = {
     'data' : {
       'data' : Array<Entry>,
       'lastID' : [] | [bigint],
+      'firstID' : [] | [bigint],
       'lastMarker' : [] | [bigint],
+      'firstMarker' : [] | [bigint],
     }
   } |
   {

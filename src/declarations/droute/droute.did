@@ -89,11 +89,14 @@ type Result =
  };
 type ReadResponse = 
  variant {
-   data: record {
-           data: vec Entry;
-           lastID: opt nat;
-           lastMarker: opt nat;
-         };
+   data:
+    record {
+      data: vec Entry;
+      firstID: opt nat;
+      firstMarker: opt nat;
+      lastID: opt nat;
+      lastMarker: opt nat;
+    };
    pointer:
     record {
       canister: principal;
