@@ -846,6 +846,14 @@ module {
         };
     };
 
+    public func byteBufferDataZoneToBuffer(dz : DataZone): Buffer.Buffer<Buffer.Buffer<Nat8>>{
+        let result = Buffer.Buffer<Buffer.Buffer<Nat8>>(dz.size());
+        for(thisItem in dz.vals()){
+            result.add(valueUnstableAsBytesBuffer(thisItem));
+        };
+        return result;
+    };
+
     public func valueUnstableAsNat16(val : TrixValueUnstable) : Nat16{
         switch (val){
             case(#Nat16(val)){
