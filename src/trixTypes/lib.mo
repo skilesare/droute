@@ -851,6 +851,19 @@ module {
         };
     };
 
+    public func valueStableAsInt(val : TrixValue) : Int{
+        switch (val){
+            case(#Int(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
     public func valueStableAsPrincipal(val : TrixValue) : Principal{
         switch (val){
             case(#Principal(val)){
@@ -975,6 +988,19 @@ module {
     public func valueUnstableAsNat(val : TrixValueUnstable) : Nat{
         switch (val){
             case(#Nat(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
+    public func valueUnstableAsInt(val : TrixValueUnstable) : Int{
+        switch (val){
+            case(#Int(val)){
                 val
             };
             case(_){
