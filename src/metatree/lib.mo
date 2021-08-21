@@ -53,6 +53,7 @@ module {
     };
 
     public type ReadResponse = {
+        #notFound;
         #data : {
             data: [Entry];
             lastID: ?Nat;
@@ -415,6 +416,7 @@ module {
 
                     return await aActor.readToData(aPointer.namespace, aPointer.minID, aPointer.maxID, aPointer.lastID, aPointer.lastMarker);
                 };
+                case(#notFound){return #notfound};
             };
         };
 
@@ -432,7 +434,7 @@ module {
             return  readFilterPage(namespace, minID, maxID, 0, 0);
         };
 
-        public func readUnique(namespace : Text, primaryID : Nat) :  ReadResponse{
+        public func readUnique(namespace : Text) :  ReadResponse{
             return  readFilterPage(namespace, null, null, 0, 0);
         };
 
@@ -447,13 +449,7 @@ module {
             switch(currentList){
                 case(null){
                     Debug.print("no logs");
-                    return #data({
-                        data = [];
-                        lastID = null;
-                        lastMarker = null;
-                        firstID = null;
-                        firstMarker = null;
-                    });
+                    return #notFound;
                 };
                 case(?currentList){
                     //todo: this wont work for large lists

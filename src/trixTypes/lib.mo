@@ -217,6 +217,14 @@ module {
         };
     };
 
+    public func toBuffer<T>(x :[T]) : Buffer.Buffer<T>{
+        let thisBuffer = Buffer.Buffer<T>(x.size());
+        for(thisItem in x.vals()){
+            thisBuffer.add(thisItem);
+        };
+        return thisBuffer;
+    };
+
     //creates a buffer of type Nat8 from an array of Nat8
     public func toBufferNat8(x : [Nat8]) : Buffer.Buffer<Nat8> {
         let theBuffer = Buffer.Buffer<Nat8>(x.size());
@@ -877,6 +885,19 @@ module {
         };
     };
 
+    public func valueStableAsText(val : TrixValue) : Text{
+        switch (val){
+            case(#Text(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                "";
+            };
+        };
+    };
+
     //todo: make these for every value type
     //buffer
     //nat - 8 16 32 64
@@ -1020,6 +1041,19 @@ module {
                 assert(false);
                 //unreachable
                 Principal.fromText("");
+            };
+        };
+    };
+
+    public func valueUnStableAsText(val : TrixValueUnstable) : Text{
+        switch (val){
+            case(#Text(val)){
+                val
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                "";
             };
         };
     };
