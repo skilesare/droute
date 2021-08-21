@@ -97,6 +97,7 @@ type ReadResponse =
       lastID: opt nat;
       lastMarker: opt nat;
     };
+   notFound;
    pointer:
     record {
       canister: principal;

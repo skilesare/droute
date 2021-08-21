@@ -184,6 +184,9 @@ actor class test_publisher() = this{
             case(#pointer(logs)){
                 return #fail("returned a pointer");
             };
+            case(#notFound){
+                return #fail("returned a not found");
+            };
             case(#data(logs)){
                 let logArray = Array.map<MetaTree.Entry, ?DRouteTypes.BroadcastLogItem>(logs.data, func(a){
                     DRouteUtilities.deserializeBroadcastLogItem(a.data);

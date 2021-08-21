@@ -101,7 +101,8 @@ export type ReadResponse = {
       'canister' : Principal,
       'namespace' : string,
     }
-  };
+  } |
+  { 'notFound' : null };
 export type Result = { 'ok' : SubscriptionResponse } |
   { 'err' : PublishError };
 export type Result_1 = { 'ok' : PublishResponse } |

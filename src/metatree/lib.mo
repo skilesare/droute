@@ -416,7 +416,7 @@ module {
 
                     return await aActor.readToData(aPointer.namespace, aPointer.minID, aPointer.maxID, aPointer.lastID, aPointer.lastMarker);
                 };
-                case(#notFound){return #notfound};
+                case(#notFound){return #notFound};
             };
         };
 

@@ -64,6 +64,7 @@ export const idlFactory = ({ IDL }) => {
       'canister' : IDL.Principal,
       'namespace' : IDL.Text,
     }),
+    'notFound' : IDL.Null,
   });
   const ProcessQueueResponse = IDL.Record({
     'queueLength' : IDL.Nat,
