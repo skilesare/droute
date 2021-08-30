@@ -6,19 +6,20 @@ This code is released for code verification purposes. All rights are retained by
 */
 ///////////////////////////////
 
+import Array "mo:base/Array";
+import Buffer "mo:base/Buffer";
+import Debug "mo:base/Debug";
+import Hash "mo:base/Hash";
+import Iter "mo:base/Iter";
+import Nat "mo:base/Nat";
+import Nat16 "mo:base/Nat16";
+import Nat32 "mo:base/Nat32";
+import Nat8 "mo:base/Nat8";
+import Principal "mo:base/Principal";
+import Result "mo:base/Result";
 import String "mo:base/Text";
 import Text "mo:base/Text";
-import Result "mo:base/Result";
-import Principal "mo:base/Principal";
-import Hash "mo:base/Hash";
-import Nat "mo:base/Nat";
-import Nat8 "mo:base/Nat8";
-import Nat32 "mo:base/Nat32";
-import Nat16 "mo:base/Nat16";
-import Buffer "mo:base/Buffer";
-import Iter "mo:base/Iter";
-import Array "mo:base/Array";
-import Debug "mo:base/Debug";
+
 import TrixTypes "../trixTypes/lib";
 
 
@@ -48,6 +49,8 @@ module {
         onDataWillBeReturned: ?((Hash, Workspace,?ProcessRequest) -> PipelineEventResponse);
         onDataReturned: ?((Hash, ?ProcessRequest, ?ProcessResponse) -> PipelineEventResponse);
         getProcessType: ?((Hash, Workspace, ?ProcessRequest) -> ProcessType);
+        getLocalWorkspace: ?((Hash, Nat, ?ProcessRequest) -> TrixTypes.Workspace);
+        putLocalWorkspace: ?((Hash, Nat, TrixTypes.Workspace, ?ProcessRequest) -> TrixTypes.Workspace);
 
     };
 
@@ -72,6 +75,8 @@ module {
         #dataIncluded : {
             data: [AddressedChunk]; //data if small enough to fit in the message
         };
+        #local : Nat;
+
         #pull : {
             sourceActor: ?DataSource;
             sourceIdentifier: ?Hash.Hash;
@@ -123,6 +128,7 @@ module {
         responseMode: {
                 #push;
                 #pull;
+                #local : Nat;
             };
     };
 
@@ -136,6 +142,7 @@ module {
         #dataIncluded: {
             payload: [AddressedChunk];
         };
+        #local : Nat;
         #intakeNeeded: {
             pipeInstanceID: PipeInstanceID;
             currentChunks: Nat;

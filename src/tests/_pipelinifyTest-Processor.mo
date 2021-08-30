@@ -152,6 +152,8 @@ actor class Processor(){
         onDataWillBeReturned = null;
         onDataReturned = null;
         getProcessType = null;
+        getLocalWorkspace = null;
+        putLocalWorkspace = null;
     });
 
 

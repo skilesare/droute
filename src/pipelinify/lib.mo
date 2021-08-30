@@ -68,6 +68,7 @@ module {
                     event = request.event;
                     dataConfig = switch(request.dataConfig){
                         case(#dataIncluded(data)){#internal;};
+                        case(#local(data)){#local(data);};
                         case(#pull(pullRequest)){
                             #pull{
                                 sourceActor= pullRequest.sourceActor;
@@ -192,6 +193,32 @@ module {
             }
         };
 
+        let getLocalWorkspace : (PipeInstanceID, Nat, ?PipelinifyTypes.ProcessRequest) -> TrixTypes.Workspace = switch (_pipeline.getLocalWorkspace){
+            case(null){
+                func _getLocalWorkspace(_hash : PipeInstanceID, _id : Nat, _request: ?PipelinifyTypes.ProcessRequest) : TrixTypes.Workspace{
+                    //just returns what it was given
+                    return TrixTypes.emptyWorkspace();
+
+                }
+            };
+            case(?_getLocalWorkspace){
+                _getLocalWorkspace;
+            }
+        };
+
+        let putLocalWorkspace : (PipeInstanceID, Nat, TrixTypes.Workspace, ?PipelinifyTypes.ProcessRequest) -> TrixTypes.Workspace = switch (_pipeline.putLocalWorkspace){
+            case(null){
+                func _putLocalWorkspacee(_hash : PipeInstanceID, _id : Nat, _workspace: TrixTypes.Workspace, _request: ?PipelinifyTypes.ProcessRequest) : TrixTypes.Workspace{
+                    //just returns what it was given
+                    return TrixTypes.emptyWorkspace();
+
+                }
+            };
+            case(?_putLocalWorkspace){
+                _putLocalWorkspace;
+            }
+        };
+
 
         func handleProcessing(pipeInstanceID : Hash.Hash, data: PipelinifyTypes.Workspace, request : ?PipelinifyTypes.ProcessRequest, step: ?Nat) : Result<{data :PipelinifyTypes.Workspace; bFinished: Bool},PipelinifyTypes.ProcessError> {
             //process the data
@@ -307,6 +334,18 @@ module {
                             //todo: dilema: how do we return before we call onData Return!
                             return #ok(processResponse);
                         };
+
+                        case(#local(id)){
+                            Debug.print("returning data locally");
+                            let dataWillBeReturnedResponse = putLocalWorkspace(pipeInstanceID, id, finalData, ?_request);
+                            //responseCache.put(pipeInstanceID, {data = processedData} );
+                            let processResponse =
+                                #local(id);
+                            //let dataReturnedResponse : PipelinifyTypes.PipelineEventResponse = onDataReturned(pipeInstanceID, ?_request, ?processResponse);
+
+                            //todo: dilema: how do we return before we call onData Return!
+                            return #ok(processResponse);
+                        };
                         //case(_){
                         //    Debug.print("not handled the returning of data")
                         //};
@@ -329,6 +368,14 @@ module {
 
             //check the data
             switch(_request.dataConfig){
+                case(#local(_id)){
+                    let dataWillLoadResponse = onDataWillBeLoaded(pipeInstanceID, ?_request);
+                    //todo: chunk data into workspace
+
+                    thisWorkspace := getLocalWorkspace(pipeInstanceID, _id, ?_request);
+                    Debug.print("workspace included" # debug_show(thisWorkspace.size()));
+                    let dataResponse : PipelinifyTypes.PipelineEventResponse = onDataReady(pipeInstanceID, thisWorkspace, ?_request);
+                };
                 case(#dataIncluded(dataIncludedRequest)){
                     //Debug.print("data included" # debug_show(dataIncludedRequest.data));
                     //finalData := dataIncludedRequest.data;

@@ -217,6 +217,30 @@ module {
         };
     };
 
+    public func cloneValueUnstable(val : TrixValueUnstable) : TrixValueUnstable{
+        switch(val){
+            case(#Class(val)){
+
+                return #Class(Array.tabulate<PropertyUnstable>(val.size(), func(idx){
+                    {name= val[idx].name; value=cloneValueUnstable(val[idx].value); immutable = val[idx].immutable};
+                }));
+            };
+            case(#Bytes(val)){
+                switch(val){
+                    case(#frozen(val)){
+                        #Bytes(#frozen(val));
+                    };
+                    case(#thawed(val)){
+                        #Bytes(#thawed(val.clone()));
+                    };
+                }
+            };
+            case(_){
+                val;
+            }
+        };
+    };
+
     public func toBuffer<T>(x :[T]) : Buffer.Buffer<T>{
         let thisBuffer = Buffer.Buffer<T>(x.size());
         for(thisItem in x.vals()){
@@ -563,6 +587,23 @@ module {
         });
 
         return result;
+    };
+
+    public func workspaceDeepClone(x : Workspace) : Workspace {
+        var currentZone = 0;
+        var currentChunk = 0;
+        let ws = Buffer.Buffer<DataZone>(x.size());
+        for(thisZone in x.vals()){
+
+            let tz = Buffer.Buffer<DataChunk>(thisZone.size());
+            ws.add(tz);
+            for(thisDataChunk in thisZone.vals()){
+                tz.add(cloneValueUnstable(thisDataChunk));
+            };
+
+        };
+
+        return ws;
     };
 
 
