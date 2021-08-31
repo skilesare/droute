@@ -81,6 +81,7 @@ module {
                         case(#push){#push};
                         case(#internal){#internal};
                     };
+                    processConfig = null;
                     executionConfig = request.executionConfig;
                     responseConfig = request.responseConfig;};
                 timestamp = Int.abs(Time.now());

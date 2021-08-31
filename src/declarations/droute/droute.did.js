@@ -134,6 +134,7 @@ export const idlFactory = ({ IDL }) => {
       'totalChunks' : IDL.Opt(IDL.Nat32),
     }),
     'push' : IDL.Null,
+    'local' : IDL.Nat,
     'dataIncluded' : IDL.Record({ 'data' : IDL.Vec(AddressedChunk) }),
   });
   const EventPublishable = IDL.Record({

@@ -107,6 +107,7 @@ type DataConfig =
  variant {
    dataIncluded: record {data: vec AddressedChunk;};
    internal;
+   local: nat;
    pull:
     record {
       data: opt vec AddressedChunk;

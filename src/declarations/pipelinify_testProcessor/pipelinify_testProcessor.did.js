@@ -4,9 +4,12 @@ export const idlFactory = ({ IDL }) => {
     'executionMode' : IDL.Variant({ 'manual' : IDL.Null, 'onLoad' : IDL.Null }),
   });
   const ResponseConfig = IDL.Record({
-    'responseMode' : IDL.Variant({ 'pull' : IDL.Null, 'push' : IDL.Null }),
+    'responseMode' : IDL.Variant({
+      'pull' : IDL.Null,
+      'push' : IDL.Null,
+      'local' : IDL.Nat,
+    }),
   });
-  const Hash = IDL.Nat32;
   const Property = IDL.Record({
     'value' : TrixValue,
     'name' : IDL.Text,
@@ -37,6 +40,7 @@ export const idlFactory = ({ IDL }) => {
       'Class' : IDL.Vec(Property),
     })
   );
+  const Hash = IDL.Nat32;
   const AddressedChunk = IDL.Tuple(IDL.Nat, IDL.Nat, TrixValue);
   const ChunkRequest = IDL.Record({
     'sourceIdentifier' : IDL.Opt(Hash),
@@ -65,12 +69,14 @@ export const idlFactory = ({ IDL }) => {
       'totalChunks' : IDL.Opt(IDL.Nat32),
     }),
     'push' : IDL.Null,
+    'local' : IDL.Nat,
     'dataIncluded' : IDL.Record({ 'data' : IDL.Vec(AddressedChunk) }),
   });
   const ProcessRequest = IDL.Record({
     'executionConfig' : ExecutionConfig,
     'responseConfig' : ResponseConfig,
     'event' : IDL.Opt(IDL.Text),
+    'processConfig' : IDL.Opt(TrixValue),
     'dataConfig' : DataConfig,
   });
   const ProcessType = IDL.Variant({
@@ -94,6 +100,7 @@ export const idlFactory = ({ IDL }) => {
       'currentChunks' : IDL.Nat,
       'pipeInstanceID' : PipeInstanceID,
     }),
+    'local' : IDL.Nat,
     'outtakeNeeded' : IDL.Record({ 'pipeInstanceID' : PipeInstanceID }),
     'dataIncluded' : IDL.Record({ 'payload' : IDL.Vec(AddressedChunk) }),
   });

@@ -25,6 +25,7 @@ export type DataConfig = { 'internal' : null } |
     }
   } |
   { 'push' : null } |
+  { 'local' : bigint } |
   { 'dataIncluded' : { 'data' : Array<AddressedChunk> } };
 export interface DataSource {
   'queryPipelinifyChunk' : (arg_0: ChunkRequest) => Promise<Result__1>,
@@ -41,6 +42,7 @@ export interface ProcessRequest {
   'executionConfig' : ExecutionConfig,
   'responseConfig' : ResponseConfig,
   'event' : [] | [string],
+  'processConfig' : [] | [TrixValue],
   'dataConfig' : DataConfig,
 }
 export type ProcessResponse = {
@@ -57,6 +59,7 @@ export type ProcessResponse = {
       'pipeInstanceID' : PipeInstanceID,
     }
   } |
+  { 'local' : bigint } |
   { 'outtakeNeeded' : { 'pipeInstanceID' : PipeInstanceID } } |
   { 'dataIncluded' : { 'payload' : Array<AddressedChunk> } };
 export type ProcessType = { 'error' : null } |
@@ -74,7 +77,8 @@ export interface Property {
 }
 export interface ResponseConfig {
   'responseMode' : { 'pull' : null } |
-    { 'push' : null },
+    { 'push' : null } |
+    { 'local' : bigint },
 }
 export type Result = { 'ok' : ProcessResponse } |
   { 'err' : ProcessError };

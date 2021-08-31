@@ -821,6 +821,30 @@ module {
             case(#Empty){[]};
         }
     };
+
+    public func getClassProperty(val: TrixValue, name : Text) : Property{
+        switch(val){
+            case(#Class(val)){
+                for(thisItem in val){
+                    if(val[thisItem].name == name){
+                        return val[thisItem];
+                    };
+                };
+                assert(false);
+                //unreachable
+                return {name=""; value=#empty; immutable=true};
+
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                return {name=""; value=#empty; immutable=true};
+            }
+
+        };
+
+    };
+
     //todo: make these for every value type
     //buffer
     //nat - 8 16 32 64

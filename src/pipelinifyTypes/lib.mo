@@ -92,6 +92,7 @@ module {
     public type ProcessRequest = {
         event: ?Text;
         dataConfig: DataConfig;
+        processConfig: ?TrixTypes.TrixValue;
         executionConfig: ExecutionConfig;
         responseConfig: ResponseConfig;
     };

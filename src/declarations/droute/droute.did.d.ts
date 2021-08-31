@@ -36,6 +36,7 @@ export type DataConfig = { 'internal' : null } |
     }
   } |
   { 'push' : null } |
+  { 'local' : bigint } |
   { 'dataIncluded' : { 'data' : Array<AddressedChunk> } };
 export interface DataSource {
   'queryPipelinifyChunk' : (arg_0: ChunkRequest) => Promise<Result__1>,

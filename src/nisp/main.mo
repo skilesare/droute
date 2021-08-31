@@ -128,7 +128,7 @@ actor class NIsp() = this {
         let thisPrincipal = pricipalAsNat(principal);
         let witness = metatree.getWitnessByNamespace("com.nisp.account." # principalText, thisPrincipal, 0);
         Debug.print("found Witness" # debug_show(witness));
-        let balanceRecord = metatree.readUnique("com.nisp.account." # principalText, thisPrincipal);
+        let balanceRecord = metatree.readUnique("com.nisp.account." # principalText);
         Debug.print("found balance" # debug_show(balanceRecord));
         switch(witness, balanceRecord){
             case(#finalWitness(witness), #data(balanceRecord)){
@@ -221,7 +221,7 @@ actor class NIsp() = this {
         let principalText = Principal.toText(principal);
         let principalNat = pricipalAsNat(principal);
         //todo: implement a metatree.readToEnd(readResponse) that makes sure we get the record for an update call
-        let balanceRecord = await metatree.readToData(metatree.readUnique("com.nisp.account." # principalText, principalNat));
+        let balanceRecord = await metatree.readToData(metatree.readUnique("com.nisp.account." # principalText));
         switch(balanceRecord){
             case(#data(balanceResult)){
                 if(balanceResult.data.size() > 0 ){

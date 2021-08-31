@@ -33,6 +33,7 @@ type Result =
    ok: ProcessResponse;
  };
 type ResponseConfig = record {responseMode: variant {
+                                              local: nat;
                                               pull;
                                               push;
                                             };};
@@ -67,6 +68,7 @@ type ProcessResponse =
       pipeInstanceID: PipeInstanceID;
       totalChunks: nat;
     };
+   local: nat;
    outtakeNeeded: record {pipeInstanceID: PipeInstanceID;};
    stepProcess: record {
                   pipeInstanceID: PipeInstanceID;
@@ -78,6 +80,7 @@ type ProcessRequest =
    dataConfig: DataConfig;
    event: opt text;
    executionConfig: ExecutionConfig;
+   processConfig: opt TrixValue;
    responseConfig: ResponseConfig;
  };
 type ProcessError = 
@@ -100,6 +103,7 @@ type DataConfig =
  variant {
    dataIncluded: record {data: vec AddressedChunk;};
    internal;
+   local: nat;
    pull:
     record {
       data: opt vec AddressedChunk;

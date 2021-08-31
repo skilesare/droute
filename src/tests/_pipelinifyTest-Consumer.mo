@@ -99,6 +99,7 @@ shared (install) actor class Consumer() = this {
             };
             executionConfig = {executionMode = #onLoad};
             responseConfig = {responseMode = #push};
+            processConfig = null;
         });
 
         switch(response){
@@ -141,6 +142,7 @@ shared (install) actor class Consumer() = this {
             };
             executionConfig = {executionMode = #onLoad};
             responseConfig = {responseMode = #push};
+            processConfig = null;
         });
 
         switch(response){
@@ -182,6 +184,7 @@ shared (install) actor class Consumer() = this {
             };
             executionConfig = {executionMode = #onLoad};
             responseConfig = {responseMode = #push};
+            processConfig = null;
         });
 
         Debug.print(debug_show(response));
@@ -226,6 +229,7 @@ shared (install) actor class Consumer() = this {
             };
             executionConfig = {executionMode = #onLoad};
             responseConfig = {responseMode = #push};
+            processConfig = null;
         });
 
         Debug.print(debug_show(response));
@@ -267,6 +271,7 @@ shared (install) actor class Consumer() = this {
             };
             executionConfig = {executionMode = #onLoad};
             responseConfig = {responseMode = #push};
+            processConfig = null;
         });
 
         Debug.print(debug_show(response));
@@ -302,6 +307,7 @@ shared (install) actor class Consumer() = this {
             dataConfig = #push;
             executionConfig = {executionMode = #onLoad};
             responseConfig = {responseMode = #push};
+            processConfig = null;
         });
 
         Debug.print(debug_show(response));
