@@ -939,6 +939,19 @@ module {
         };
     };
 
+    public func valueStableAsBoolean(val : TrixValue) : Bool{
+        switch (val){
+            case(#Bool(val)){
+                val;
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                false;
+            };
+        };
+    };
+
     //todo: make these for every value type
     //buffer
     //nat - 8 16 32 64
@@ -982,6 +995,19 @@ module {
                 assert(false);
                 //unreachable
                 Buffer.Buffer<Nat8>(1);
+            };
+        };
+    };
+
+    public func valueUnstableAsBoolean(val : TrixValueUnstable) : Bool{
+        switch (val){
+            case(#Bool(val)){
+                val;
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                false;
             };
         };
     };
