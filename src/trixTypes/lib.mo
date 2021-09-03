@@ -823,6 +823,7 @@ module {
     };
 
     public func getClassProperty(val: TrixValue, name : Text) : Property{
+        Debug.print("getting " # name # " from " # debug_show(val));
         switch(val){
             case(#Class(val)){
                 for(thisItem in val.vals()){
@@ -830,12 +831,14 @@ module {
                         return thisItem;
                     };
                 };
+                Debug.print("couldnt find name in class");
                 assert(false);
                 //unreachable
                 return {name=""; value=#Empty; immutable=true};
 
             };
             case(_){
+                 Debug.print("was not a class");
                 assert(false);
                 //unreachable
                 return {name=""; value=#Empty; immutable=true};

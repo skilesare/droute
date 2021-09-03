@@ -55,8 +55,6 @@ module {
             selfHash
         );
 
-
-
         func getPipeInstanceID(request: PipelinifyTypes.ProcessRequest) : PipeInstanceID {
             nonce += 1;
             //todo enable time or some randomish var for the nonce
