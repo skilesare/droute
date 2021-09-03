@@ -825,20 +825,20 @@ module {
     public func getClassProperty(val: TrixValue, name : Text) : Property{
         switch(val){
             case(#Class(val)){
-                for(thisItem in val){
-                    if(val[thisItem].name == name){
-                        return val[thisItem];
+                for(thisItem in val.vals()){
+                    if(thisItem.name == name){
+                        return thisItem;
                     };
                 };
                 assert(false);
                 //unreachable
-                return {name=""; value=#empty; immutable=true};
+                return {name=""; value=#Empty; immutable=true};
 
             };
             case(_){
                 assert(false);
                 //unreachable
-                return {name=""; value=#empty; immutable=true};
+                return {name=""; value=#Empty; immutable=true};
             }
 
         };
