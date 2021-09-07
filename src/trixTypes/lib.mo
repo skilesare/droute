@@ -54,6 +54,11 @@ module {
         #Blob : Blob;
         #Class : [Property];
         #Principal : Principal;
+
+        #Floats: {
+            #frozen: [Float];
+            #thawed: [Float]; //need to thaw when going to TrixValueUnstable
+         };
         #Bytes : {
             #frozen: [Nat8];
             #thawed: [Nat8]; //need to thaw when going to TrixValueUnstable
@@ -78,6 +83,10 @@ module {
         #Blob : Blob;
         #Class : [PropertyUnstable];
         #Principal : Principal;
+        #Floats : {
+            #frozen: [Float];
+            #thawed: Buffer.Buffer<Float>;
+        };
         #Bytes : {
             #frozen: [Nat8];
             #thawed: Buffer.Buffer<Nat8>; //need to thaw when going to TrixValueUnstable
@@ -249,15 +258,7 @@ module {
         return thisBuffer;
     };
 
-    //creates a buffer of type Nat8 from an array of Nat8
-    public func toBufferNat8(x : [Nat8]) : Buffer.Buffer<Nat8> {
-        let theBuffer = Buffer.Buffer<Nat8>(x.size());
-        //Debug.print(debug_show(x) # " " # debug_show(x.size()));
-        for (thisIndex in Iter.range(0,x.size() - 1)){
-            theBuffer.add(x[thisIndex]);
-        };
-        return theBuffer;
-    };
+
 
     public func toBufferValues(x : [TrixValue]) : Buffer.Buffer<TrixValue> {
         let theBuffer = Buffer.Buffer<TrixValue>(x.size());
@@ -405,6 +406,7 @@ module {
             case(#Text(val)){#Text(val)};
             case(#Bool(val)){#Bool(val)};
             case(#Blob(val)){#Blob(val)};
+
             case(#Class(val)){
                 #Class(
                     Array.tabulate<Property>(val.size(), func(idx){
@@ -416,6 +418,12 @@ module {
                 switch(val){
                     case(#frozen(val)){#Bytes(#frozen(val))};
                     case(#thawed(val)){#Bytes(#thawed(val.toArray()))};
+                };
+            };
+            case(#Floats(val)){
+                switch(val){
+                    case(#frozen(val)){#Floats(#frozen(val))};
+                    case(#thawed(val)){#Floats(#thawed(val.toArray()))};
                 };
             };
             case(#Empty){#Empty};
@@ -448,14 +456,20 @@ module {
             case(#Bytes(val)){
                 switch(val){
                     case(#frozen(val)){#Bytes(#frozen(val))};
-                    case(#thawed(val)){#Bytes(#thawed(toBufferNat8(val)))};
+                    case(#thawed(val)){#Bytes(#thawed(toBuffer<Nat8>(val)))};
+                };
+            };
+            case(#Floats(val)){
+                switch(val){
+                    case(#frozen(val)){#Floats(#frozen(val))};
+                    case(#thawed(val)){#Floats(#thawed(toBuffer<Float>(val)))};
                 };
             };
             case(#Empty){#Empty};
         }
     };
     public func getValueSize(item : TrixValue) : Nat{
-        switch(item){
+        let varSize = switch(item){
             case(#Int(val)){
                 var a : Nat = 0;
                 var b : Nat = Int.abs(val);
@@ -500,16 +514,24 @@ module {
             case(#Principal(val)){principalToBytes(val).size()};//don't like this but need to confirm it is constant
             case(#Bytes(val)){
                 switch(val){
-                    case(#frozen(val)){val.size()};
-                    case(#thawed(val)){val.size()};
+                    case(#frozen(val)){val.size() + 2};
+                    case(#thawed(val)){val.size() + 2};
+                };
+            };
+            case(#Floats(val)){
+                switch(val){
+                    case(#frozen(val)){(val.size() * 4) + 2};
+                    case(#thawed(val)){(val.size() * 4) + 2};
                 };
             };
             case(#Empty){0};
-        }
+        };
+
+        return varSize + 2;
     };
 
     public func getValueUnstableSize(item : TrixValueUnstable) : Nat{
-        switch(item){
+        let varSize = switch(item){
             case(#Int(val)){
                 var a : Nat = 0;
                 var b : Nat = Int.abs(val);
@@ -554,12 +576,19 @@ module {
             case(#Principal(val)){principalToBytes(val).size()};//don't like this but need to confirm it is constant
             case(#Bytes(val)){
                 switch(val){
-                    case(#frozen(val)){val.size()};
-                    case(#thawed(val)){val.size()};
+                    case(#frozen(val)){val.size() + 2};
+                    case(#thawed(val)){val.size() + 2};
+                };
+            };
+            case(#Floats(val)){
+                switch(val){
+                    case(#frozen(val)){(val.size() * 4) + 2};
+                    case(#thawed(val)){(val.size() * 4) + 2};
                 };
             };
             case(#Empty){0};
-        }
+        };
+        return varSize + 2;
     };
 
     public func stablizeValueArray(items : DataZone) : [TrixValue]{
@@ -818,6 +847,7 @@ module {
                     case(#thawed(val)){val};
                 };
             };
+            case(#Floats(val)){Prelude.nyi()};
             case(#Empty){[]};
         }
     };
@@ -1022,6 +1052,26 @@ module {
                 assert(false);
                 //unreachable
                 Buffer.Buffer<Nat8>(1);
+            };
+        };
+    };
+
+    public func valueUnstableAsFloatBuffer(val : TrixValueUnstable) : Buffer.Buffer<Float>{
+        switch (val){
+            case(#Floats(val)){
+                switch(val){
+                    case(#frozen(val)){
+                        assert(false);
+                        //unreachable
+                        Buffer.Buffer<Float>(1);
+                    };
+                    case(#thawed(val)){val};
+                };
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                Buffer.Buffer<Float>(1);
             };
         };
     };
