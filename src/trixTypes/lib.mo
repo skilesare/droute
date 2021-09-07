@@ -1056,7 +1056,7 @@ module {
         };
     };
 
-    public func valueUnstableAsFloatBuffer(val : TrixValueUnstable) : Buffer.Buffer<Float>{
+    public func valueUnstableAsFloatsBuffer(val : TrixValueUnstable) : Buffer.Buffer<Float>{
         switch (val){
             case(#Floats(val)){
                 switch(val){
