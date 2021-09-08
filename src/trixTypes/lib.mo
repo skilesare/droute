@@ -1009,6 +1009,19 @@ module {
         };
     };
 
+    public func valueStableAsFloat(val : TrixValue) : Float{
+        switch (val){
+            case(#Float(val)){
+                val;
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
+            };
+        };
+    };
+
     //todo: make these for every value type
     //buffer
     //nat - 8 16 32 64
@@ -1085,6 +1098,19 @@ module {
                 assert(false);
                 //unreachable
                 false;
+            };
+        };
+    };
+
+    public func valueUnstableAsFloat(val : TrixValueUnstable) : Float{
+        switch (val){
+            case(#Float(val)){
+                val;
+            };
+            case(_){
+                assert(false);
+                //unreachable
+                0;
             };
         };
     };
