@@ -580,7 +580,10 @@ module {
                     return false;
                 };
                 case(_,_){//initialize? I think we assume this is initialized elsewhere
-                    Debug.print("Not handled");
+                    Debug.print("No Cache and No Step...check finished");
+                    if(data.bFinished == false){
+                        return true;
+                    };
                     return false;
                 };
             };
