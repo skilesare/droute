@@ -586,6 +586,7 @@ module {
                 case(_,_){//initialize? I think we assume this is initialized elsewhere
                     Debug.print("No Cache and No Step...check finished" # debug_show(data.bFinished));
                     if(data.bFinished == false){
+
                         return true;
                     };
                     return false;
@@ -616,13 +617,32 @@ module {
                         case(#ok(data)){
                             Debug.print("handling single step process");
                             //processedData := data;
-                            let notFinihsed : Bool = handleParallelProcessStepResult(_request.pipeInstanceID, _request.step, data);
+                            let notFinished : Bool = handleParallelProcessStepResult(_request.pipeInstanceID, _request.step, data);
                                 //more processing needed
-                            Debug.print("inside of the more steps handler");
-                            return #ok(#stepProcess{
-                                pipeInstanceID = _request.pipeInstanceID;
-                                status = getProcessType(_request.pipeInstanceID, thisCache.data,?thisRequestCache.request);
-                            });
+                            let status = getProcessType(_request.pipeInstanceID, thisCache.data,?thisRequestCache.request);
+                            switch(status){
+                                //let user finalize for parallel
+                                case(#parallel(info)){
+                                    Debug.print("inside of the more steps handler");
+                                    return #ok(#stepProcess{
+                                        pipeInstanceID = _request.pipeInstanceID;
+                                        status = status;
+                                    });
+                                };
+                                case(#sequential(info)){
+                                    if(data.bFinished == true){
+                                        //do nothing
+                                    } else {
+                                        return #ok(#stepProcess{
+                                        pipeInstanceID = _request.pipeInstanceID;
+                                        status = status;
+                                    });
+                                    };
+                                };
+                                case(_){
+                                    return #err({code=948484; text="not configured"});
+                                }
+                            }
                         };
                         case(#err(theError)){
 
@@ -632,7 +652,7 @@ module {
 
 
                     //return the data
-                    Debug.print("shouldn't ever be here - return after single step");
+                    Debug.print("shouldn only be here for sequential - return after single step");
 
                     return handleReturn(_request.pipeInstanceID, thisCache.data, ?thisRequestCache.request);
                 };
