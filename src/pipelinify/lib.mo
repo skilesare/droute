@@ -79,7 +79,7 @@ module {
                         case(#push){#push};
                         case(#internal){#internal};
                     };
-                    processConfig = null;
+                    processConfig = request.processConfig;
                     executionConfig = request.executionConfig;
                     responseConfig = request.responseConfig;};
                 timestamp = Int.abs(Time.now());
@@ -246,7 +246,7 @@ module {
                                     //processedData := data.newData;
                                 };
                                 case(#stepNeeded){
-                                    Debug.print("more processing needed");
+                                    Debug.print("more processing needed a");
                                     return #ok{data=data;bFinished=false};
                                 };
                                 case(_){
@@ -274,7 +274,7 @@ module {
                                     return #ok{data=data;bFinished=false};
                                 };
                                 case(#stepNeeded){
-                                    Debug.print("more processing needed");
+                                    Debug.print("more processing needed b");
                                     return #ok{data=data;bFinished=false};
                                 };
                                 case(_){
@@ -372,6 +372,10 @@ module {
                     //todo: chunk data into workspace
 
                     thisWorkspace := getLocalWorkspace(pipeInstanceID, _id, ?_request);
+                    workspaceCache.put(pipeInstanceID, {
+                                var status = #initialized;
+                                data = thisWorkspace;
+                            });
                     Debug.print("workspace included" # debug_show(thisWorkspace.size()));
                     let dataResponse : PipelinifyTypes.PipelineEventResponse = onDataReady(pipeInstanceID, thisWorkspace, ?_request);
                 };
@@ -580,7 +584,7 @@ module {
                     return false;
                 };
                 case(_,_){//initialize? I think we assume this is initialized elsewhere
-                    Debug.print("No Cache and No Step...check finished");
+                    Debug.print("No Cache and No Step...check finished" # debug_show(data.bFinished));
                     if(data.bFinished == false){
                         return true;
                     };
@@ -602,7 +606,7 @@ module {
             switch(thisCache, thisRequestCache){
 
                 case(?thisCache, ?thisRequestCache){
-                    let thisProcessStatus = getProcessType(_request.pipeInstanceID, thisCache.data, ?thisRequestCache.request);
+                    //let thisProcessStatus = getProcessType(_request.pipeInstanceID, thisCache.data, ?thisRequestCache.request);
 
                     Debug.print("processing final chunks " # debug_show(thisCache.data.size()));
                     //var finalData = Array.flatten<Nat8>(thisCache.data);
