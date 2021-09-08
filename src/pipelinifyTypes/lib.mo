@@ -227,7 +227,7 @@ module {
 
 
     public type PushToPipeStatus = {#pending : Nat; #finished; #err: ProcessError;};
-    public type ProcessingStatus = {#pending : (Nat, Nat); #finished; #err: ProcessError;};
+    public type ProcessingStatus = {#pending : (Nat, Nat, {#parallel;#sequential;}); #finished; #err: ProcessError;};
 
     public type ProcessType = {
         #unconfigured;
