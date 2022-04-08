@@ -1,7 +1,32 @@
 import type { Principal } from '@dfinity/principal';
-export type AddressedChunk = [bigint, bigint, TrixValue];
+export type AddressedChunk = [bigint, bigint, CandyValue];
 export type AddressedChunkArray = Array<AddressedChunk__1>;
-export type AddressedChunk__1 = [bigint, bigint, TrixValue__1];
+export type AddressedChunk__1 = [bigint, bigint, TrixValue];
+export type CandyValue = { 'Int' : bigint } |
+  { 'Nat' : bigint } |
+  { 'Empty' : null } |
+  { 'Nat16' : number } |
+  { 'Nat32' : number } |
+  { 'Nat64' : bigint } |
+  { 'Blob' : Array<number> } |
+  { 'Bool' : boolean } |
+  { 'Int8' : number } |
+  { 'Nat8' : number } |
+  { 'Nats' : { 'thawed' : Array<bigint> } | { 'frozen' : Array<bigint> } } |
+  { 'Text' : string } |
+  { 'Bytes' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
+  { 'Int16' : number } |
+  { 'Int32' : number } |
+  { 'Int64' : bigint } |
+  { 'Option' : [] | [CandyValue] } |
+  { 'Floats' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
+  { 'Float' : number } |
+  { 'Principal' : Principal } |
+  {
+    'Array' : { 'thawed' : Array<CandyValue> } |
+      { 'frozen' : Array<CandyValue> }
+  } |
+  { 'Class' : Array<Property> };
 export interface ChunkRequest {
   'sourceIdentifier' : [] | [Hash],
   'chunkID' : bigint,
@@ -65,12 +90,12 @@ export interface ProcessQueueResponse {
   'eventsProcessed' : bigint,
 }
 export interface Property {
-  'value' : TrixValue,
+  'value' : CandyValue,
   'name' : string,
   'immutable' : boolean,
 }
 export interface Property__1 {
-  'value' : TrixValue__1,
+  'value' : TrixValue,
   'name' : string,
   'immutable' : boolean,
 }
@@ -135,31 +160,20 @@ export type TrixValue = { 'Int' : bigint } |
   { 'Bool' : boolean } |
   { 'Int8' : number } |
   { 'Nat8' : number } |
+  { 'Nats' : { 'thawed' : Array<bigint> } | { 'frozen' : Array<bigint> } } |
   { 'Text' : string } |
   { 'Bytes' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
   { 'Int16' : number } |
   { 'Int32' : number } |
   { 'Int64' : bigint } |
+  { 'Option' : [] | [TrixValue] } |
+  { 'Floats' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
   { 'Float' : number } |
   { 'Principal' : Principal } |
-  { 'Class' : Array<Property> };
-export type TrixValue__1 = { 'Int' : bigint } |
-  { 'Nat' : bigint } |
-  { 'Empty' : null } |
-  { 'Nat16' : number } |
-  { 'Nat32' : number } |
-  { 'Nat64' : bigint } |
-  { 'Blob' : Array<number> } |
-  { 'Bool' : boolean } |
-  { 'Int8' : number } |
-  { 'Nat8' : number } |
-  { 'Text' : string } |
-  { 'Bytes' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
-  { 'Int16' : number } |
-  { 'Int32' : number } |
-  { 'Int64' : bigint } |
-  { 'Float' : number } |
-  { 'Principal' : Principal } |
+  {
+    'Array' : { 'thawed' : Array<TrixValue> } |
+      { 'frozen' : Array<TrixValue> }
+  } |
   { 'Class' : Array<Property__1> };
 export type ValidSourceOptions = { 'blacklist' : Array<Principal> } |
   { 'whitelist' : Array<Principal> } |

@@ -1,0 +1,9 @@
+type EventRegistrationStable =
+  {
+    eventType : Text;
+    publishingCanisters : [Text];
+    validSources : ValidSourceOptions
+  };
+actor {
+  stable var upgradeEventRegistration : [EventRegistrationStable]
+};

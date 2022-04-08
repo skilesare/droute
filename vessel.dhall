@@ -1,4 +1,4 @@
 {
-  dependencies = [ "base", "matchers", "principal" ],
-  compiler = None Text
+  dependencies = [ "base", "matchers", "principal", "candy", "pipelinify", "hash", "array", "encoding", "crypto" ],
+  compiler = Some "0.6.22"
 }

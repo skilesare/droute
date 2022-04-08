@@ -29,33 +29,10 @@
       "dependencies":[
         "nisp"
       ]
-    },
-    "pipelinify_testRunner": {
-      "main": "src/tests/_pipelinifyTest-Runner.mo",
-      "type": "motoko"
-    },
-    "pipelinify_testConsumer": {
-      "main": "src/tests/_pipelinifyTest-Consumer.mo",
-      "type": "motoko"
-    },
-    "pipelinify_testProcessor": {
-      "main": "src/tests/_pipelinifyTest-Processor.mo",
-      "type": "motoko"
-    },
-
-    "droute_assets": {
-      "dependencies": [
-        "droute"
-      ],
-      "frontend": {
-        "entrypoint": "src/droute_assets/src/index.html"
-      },
-      "source": [
-        "src/droute_assets/assets",
-        "dist/droute_assets/"
-      ],
-      "type": "assets"
     }
+    
+
+    
   },
   "defaults": {
     "build": {
@@ -63,7 +40,7 @@
       "packtool": "vessel sources"
     }
   },
-  "dfx": "0.7.7",
+  "dfx": "0.9.2",
   "networks": {
     "local": {
       "bind": "127.0.0.1:8000",

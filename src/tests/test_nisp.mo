@@ -13,7 +13,7 @@ import Option "mo:base/Option";
 import Array "mo:base/Array";
 import S "mo:matchers/Suite";
 import T "mo:matchers/Testable";
-import TrixTypes "../TrixTypes/lib";
+import Candy "mo:candy/types";
 import NIsp "../nisp/main";
 import NIspApp "../nisp/app";
 

@@ -23,13 +23,13 @@ import Array "mo:base/Array";
 import Debug "mo:base/Debug";
 
 import HashMap "mo:base/HashMap";
-import TrixTypes "../TrixTypes";
+import Candy "mo:candy/types";
 import SHA256 "../dRouteUtilities/SHA256";
 import MerkleTree "../dRouteUtilities/MerkleTree";
 import CertifiedData "mo:base/CertifiedData";
 //import Result "mo:base/Result";
 
-import PipelinifyTypes "../PipelinifyTypes";
+import PipelinifyTypes "mo:pipelinify/types";
 
 module {
 

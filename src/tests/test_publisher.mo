@@ -13,7 +13,7 @@ import Option "mo:base/Option";
 import Array "mo:base/Array";
 import S "mo:matchers/Suite";
 import T "mo:matchers/Testable";
-import TrixTypes "../TrixTypes/lib";
+import Candy "mo:candy/types";
 import MetaTree "../metatree/lib";
 import dRouteListener "../dRouteListener";
 import dRoutePublisher "../dRoutePublisher";
@@ -53,7 +53,7 @@ actor class test_publisher() = this{
             eventType = "test123";
             userID = 1;
             dataConfig = #dataIncluded{
-                data = [(0,0,#Bytes(#frozen([1:Nat8,2:Nat8,3:Nat8,4:Nat8])) : TrixTypes.TrixValue)]};
+                data = [(0,0,#Bytes(#frozen([1:Nat8,2:Nat8,3:Nat8,4:Nat8])) : Candy.CandyValue)]};
 
         };
 
@@ -196,7 +196,6 @@ actor class test_publisher() = this{
                 let dataSize = logs.data.size();
                 let lastlog = DRouteUtilities.deserializeBroadcastLogItem(logs.data[dataSize-1].data);
                 Debug.print("last log " # debug_show(lastlog));
-
 
 
 

@@ -9,7 +9,9 @@ import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Iter "mo:base/Iter";
 import Text "mo:base/Text";
-import TrixTypes "../TrixTypes/lib";
+import Candy "mo:candy/types";
+import Conversion "mo:candy/conversion";
+import Workspace "mo:candy/workspace";
 
 
 actor class NIsp() = this {
@@ -26,9 +28,9 @@ actor class NIsp() = this {
         apps: [NIspAppRecord];
     };
 
-    func serializeNIspAccount(account: NIspAccount) : TrixTypes.Workspace{
-        let ws = TrixTypes.emptyWorkspace();
-        let chunks = Buffer.Buffer<TrixTypes.AddressedChunk>(account.apps.size() + 3);
+    func serializeNIspAccount(account: NIspAccount) : Candy.Workspace{
+        let ws = Workspace.emptyWorkspace();
+        let chunks = Buffer.Buffer<Candy.AddressedChunk>(account.apps.size() + 3);
         chunks.add((0,0,#Nat(1))); //version 1
         chunks.add((1,0, #Principal(account.principal)));
         chunks.add((2,0, #Nat(account.cycles)));
@@ -49,18 +51,18 @@ actor class NIsp() = this {
         };
 
 
-        TrixTypes.fileAddressedChunks(ws,chunks.toArray());
+        Workspace.fileAddressedChunks(ws,chunks.toArray());
         return ws;
     };
 
-    func deSerializeNIspAccountChunks(chunks: TrixTypes.AddressedChunkArray) : ?NIspAccount{
-        let ws = TrixTypes.emptyWorkspace();
-        TrixTypes.fileAddressedChunks(ws,chunks);
+    func deSerializeNIspAccountChunks(chunks: Candy.AddressedChunkArray) : ?NIspAccount{
+        let ws = Workspace.emptyWorkspace();
+        Workspace.fileAddressedChunks(ws,chunks);
         deSerializeNIspAccountWorkspace(ws);
     };
 
-    func deSerializeNIspAccountWorkspace(ws: TrixTypes.Workspace) : ?NIspAccount{
-        let version = TrixTypes.valueUnstableToNat(ws.get(0).get(0));
+    func deSerializeNIspAccountWorkspace(ws: Candy.Workspace) : ?NIspAccount{
+        let version = Conversion.valueUnstableToNat(ws.get(0).get(0));
         if(version == 1){
             let apps = Buffer.Buffer<NIspAppRecord>(ws.get(3).size());
             if(ws.size() > 3){
@@ -73,16 +75,16 @@ actor class NIsp() = this {
                         };
                     if(exists == true ){
                         apps.add({
-                            app = TrixTypes.valueUnstableToText(ws.get(3).get(thisApp));
-                            cycles = TrixTypes.valueUnstableToNat(ws.get(4).get(thisApp));
-                            blocked = TrixTypes.valueUnstableToBool(ws.get(5).get(thisApp));
+                            app = Conversion.valueUnstableToText(ws.get(3).get(thisApp));
+                            cycles = Conversion.valueUnstableToNat(ws.get(4).get(thisApp));
+                            blocked = Conversion.valueUnstableToBool(ws.get(5).get(thisApp));
                         });
                     };
                 };
             };
             return ?{
-                principal = TrixTypes.valueUnstableToPrincipal(ws.get(1).get(0));
-                cycles = TrixTypes.valueUnstableToNat(ws.get(2).get(0));
+                principal = Conversion.valueUnstableToPrincipal(ws.get(1).get(0));
+                cycles = Conversion.valueUnstableToNat(ws.get(2).get(0));
                 apps = apps.toArray();
             }
         };
@@ -116,7 +118,7 @@ actor class NIsp() = this {
     //];
 
     func pricipalAsNat(principal : Principal) : Nat{
-        TrixTypes.bytesToNat(TrixTypes.principalToBytes(principal));
+        Conversion.bytesToNat(Conversion.principalToBytes(principal));
     };
 
     func getBalanceWitness(principal : Principal, apps : ?[Text]) : NIspTypes.BalanceWitness {
@@ -234,7 +236,7 @@ actor class NIsp() = this {
                     let marker = await metatree.replace("com.nisp.account." # principalText,
                         principalNat,
                         //todo: this needs to be a better interface for metatree that takes workspaces and serialization into account. use orthoginal percistance
-                        #dataIncluded({data = TrixTypes.workspaceToAddressedChunkArray(serializeNIspAccount(newNispAccount))}),
+                        #dataIncluded({data = Workspace.workspaceToAddressedChunkArray(serializeNIspAccount(newNispAccount))}),
                         true);
                     //marker should be 0
                     Debug.print(debug_show(marker));
@@ -248,7 +250,7 @@ actor class NIsp() = this {
                     let marker = await metatree.replace("com.nisp.account." # principalText,
                         principalNat,
                         //todo: this needs to be a better interface for metatree that takes workspaces and serialization into account. use orthoginal percistance
-                        #dataIncluded({data = TrixTypes.workspaceToAddressedChunkArray(serializeNIspAccount(newNispAccount))}),
+                        #dataIncluded({data = Workspace.workspaceToAddressedChunkArray(serializeNIspAccount(newNispAccount))}),
                         true);
                     //marker should be 0
                     Debug.print(debug_show(marker));

@@ -1,5 +1,30 @@
 import type { Principal } from '@dfinity/principal';
-export type AddressedChunk = [bigint, bigint, TrixValue];
+export type AddressedChunk = [bigint, bigint, CandyValue];
+export type CandyValue = { 'Int' : bigint } |
+  { 'Nat' : bigint } |
+  { 'Empty' : null } |
+  { 'Nat16' : number } |
+  { 'Nat32' : number } |
+  { 'Nat64' : bigint } |
+  { 'Blob' : Array<number> } |
+  { 'Bool' : boolean } |
+  { 'Int8' : number } |
+  { 'Nat8' : number } |
+  { 'Nats' : { 'thawed' : Array<bigint> } | { 'frozen' : Array<bigint> } } |
+  { 'Text' : string } |
+  { 'Bytes' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
+  { 'Int16' : number } |
+  { 'Int32' : number } |
+  { 'Int64' : bigint } |
+  { 'Option' : [] | [CandyValue] } |
+  { 'Floats' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
+  { 'Float' : number } |
+  { 'Principal' : Principal } |
+  {
+    'Array' : { 'thawed' : Array<CandyValue> } |
+      { 'frozen' : Array<CandyValue> }
+  } |
+  { 'Class' : Array<Property> };
 export interface ChunkRequest {
   'sourceIdentifier' : [] | [Hash__1],
   'chunkID' : bigint,
@@ -47,31 +72,13 @@ export type NotifyResponse = { 'ok' : boolean } |
 export type Principal = Principal;
 export interface ProcessError { 'code' : bigint, 'text' : string }
 export interface Property {
-  'value' : TrixValue,
+  'value' : CandyValue,
   'name' : string,
   'immutable' : boolean,
 }
 export interface PublishError { 'code' : bigint, 'text' : string }
 export type Result = { 'ok' : ChunkResponse } |
   { 'err' : ProcessError };
-export type TrixValue = { 'Int' : bigint } |
-  { 'Nat' : bigint } |
-  { 'Empty' : null } |
-  { 'Nat16' : number } |
-  { 'Nat32' : number } |
-  { 'Nat64' : bigint } |
-  { 'Blob' : Array<number> } |
-  { 'Bool' : boolean } |
-  { 'Int8' : number } |
-  { 'Nat8' : number } |
-  { 'Text' : string } |
-  { 'Bytes' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
-  { 'Int16' : number } |
-  { 'Int32' : number } |
-  { 'Int64' : bigint } |
-  { 'Float' : number } |
-  { 'Principal' : Principal } |
-  { 'Class' : Array<Property> };
 export type Value = Array<number>;
 export type Witness = { 'labeled' : [Key, Witness] } |
   { 'fork' : [Witness, Witness] } |

@@ -14,7 +14,7 @@ import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import TrixTypes "../TrixTypes/lib";
+import Candy "mo:candy/types";
 
 
 actor class DRoute() = this {
@@ -25,7 +25,7 @@ actor class DRoute() = this {
     type PublishError = DRouteTypes.PublishError;
     type EventRegistration = DRouteTypes.EventRegistration;
     type ValidSourceOptions = DRouteTypes.ValidSourceOptions;
-    type AddressedChunkArray = TrixTypes.AddressedChunkArray;
+    type AddressedChunkArray = Candy.AddressedChunkArray;
 
     ///////////////////////////////////
     // todo: this may need to be in the reg canister and a comprable structure in each publishing canister

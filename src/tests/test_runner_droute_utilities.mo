@@ -4,7 +4,7 @@ import M "mo:matchers/Matchers";
 import T "mo:matchers/Testable";
 import S "mo:matchers/Suite";
 import Principal "mo:base/Principal";
-import TrixTypes "../trixtypes/lib";
+import Candy "mo:candy/types";
 import DrouteUtilities "../DRouteUtilities/lib";
 import Nat8 "mo:base/Nat8";
 import Debug "mo:base/Debug";
@@ -23,9 +23,9 @@ actor class test_runner_droute_utilities() = this{
           try {
             /*
             let data = [
-            (0,0,TrixTypes.nat16ToBytes(1:Nat16)),
-            (0,1,TrixTypes.nat16ToBytes(2:Nat16)),
-            (1,0,TrixTypes.nat16ToBytes(3:Nat16))];
+            (0,0,Candy.nat16ToBytes(1:Nat16)),
+            (0,1,Candy.nat16ToBytes(2:Nat16)),
+            (1,0,Candy.nat16ToBytes(3:Nat16))];
 
 
             let dRouteEvent = DrouteUtilities.createEvent(
@@ -48,16 +48,16 @@ actor class test_runner_droute_utilities() = this{
             let stableUserIDFieldIndex = 2;
             let stableDRouteIDFieldIndex = 3;
 
-            let stableTextField : Text = TrixTypes.bytesToText(stableDRouteEvent[stableTextFieldIndex].2);
-            let stableUserIDField : Nat = TrixTypes.bytesToNat(stableDRouteEvent[stableUserIDFieldIndex].2);
-            let stableDRouteIDField : Nat = TrixTypes.bytesToNat(stableDRouteEvent[stableDRouteIDFieldIndex].2);
+            let stableTextField : Text = Candy.bytesToText(stableDRouteEvent[stableTextFieldIndex].2);
+            let stableUserIDField : Nat = Conversion.bytesToNat(stableDRouteEvent[stableUserIDFieldIndex].2);
+            let stableDRouteIDField : Nat = Conversion.bytesToNat(stableDRouteEvent[stableDRouteIDFieldIndex].2);
 
 
             let dataFieldIndexStart = 4;
 
             let suite = S.suite("test Addresed Chunk Construction", [
               S.test("1", dRouteEvent.eventType : Text, M.equals<Text>(T.text(stableTextField : Text))),
-              S.test("2", Principal.toText(dRouteEvent.source), M.equals(T.text(Principal.toText(TrixTypes.bytesToPrincipal(stableDRouteEvent[stablePrincipalFieldIndex].2))))),
+              S.test("2", Principal.toText(dRouteEvent.source), M.equals(T.text(Principal.toText(Candy.bytesToPrincipal(stableDRouteEvent[stablePrincipalFieldIndex].2))))),
 
               S.test("3", 4, M.equals<Nat>(T.nat(stableDRouteEvent[dataFieldIndexStart].0))),
               S.test("4", 0, M.equals(T.nat(stableDRouteEvent[dataFieldIndexStart].1))),

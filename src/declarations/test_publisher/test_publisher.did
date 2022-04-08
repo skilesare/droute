@@ -30,30 +30,6 @@ type Witness =
    pruned: Hash;
  };
 type Value = blob;
-type TrixValue = 
- variant {
-   Blob: blob;
-   Bool: bool;
-   Bytes: variant {
-            frozen: vec nat8;
-            thawed: vec nat8;
-          };
-   Class: vec Property;
-   Empty;
-   Float: float64;
-   Int: int;
-   Int16: int16;
-   Int32: int32;
-   Int64: int64;
-   Int8: int8;
-   Nat: nat;
-   Nat16: nat16;
-   Nat32: nat32;
-   Nat64: nat64;
-   Nat8: nat8;
-   Principal: principal;
-   Text: text;
- };
 type Result = 
  variant {
    err: ProcessError;
@@ -68,7 +44,7 @@ type Property =
  record {
    immutable: bool;
    name: text;
-   value: TrixValue;
+   value: CandyValue;
  };
 type ProcessError = 
  record {
@@ -146,10 +122,47 @@ type ChunkRequest =
    event: opt text;
    sourceIdentifier: opt Hash__1;
  };
+type CandyValue = 
+ variant {
+   Array: variant {
+            frozen: vec CandyValue;
+            thawed: vec CandyValue;
+          };
+   Blob: blob;
+   Bool: bool;
+   Bytes: variant {
+            frozen: vec nat8;
+            thawed: vec nat8;
+          };
+   Class: vec Property;
+   Empty;
+   Float: float64;
+   Floats: variant {
+             frozen: vec float64;
+             thawed: vec float64;
+           };
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: variant {
+           frozen: vec nat;
+           thawed: vec nat;
+         };
+   Option: opt CandyValue;
+   Principal: principal;
+   Text: text;
+ };
 type AddressedChunk = 
  record {
    nat;
    nat;
-   TrixValue;
+   CandyValue;
  };
 service : () -> test_publisher

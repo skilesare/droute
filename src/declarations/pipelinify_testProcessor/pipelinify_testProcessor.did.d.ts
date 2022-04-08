@@ -94,12 +94,19 @@ export type TrixValue = { 'Int' : bigint } |
   { 'Bool' : boolean } |
   { 'Int8' : number } |
   { 'Nat8' : number } |
+  { 'Nats' : { 'thawed' : Array<bigint> } | { 'frozen' : Array<bigint> } } |
   { 'Text' : string } |
   { 'Bytes' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
   { 'Int16' : number } |
   { 'Int32' : number } |
   { 'Int64' : bigint } |
+  { 'Option' : [] | [TrixValue] } |
+  { 'Floats' : { 'thawed' : Array<number> } | { 'frozen' : Array<number> } } |
   { 'Float' : number } |
   { 'Principal' : Principal } |
+  {
+    'Array' : { 'thawed' : Array<TrixValue> } |
+      { 'frozen' : Array<TrixValue> }
+  } |
   { 'Class' : Array<Property> };
 export interface _SERVICE extends Processor {}

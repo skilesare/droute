@@ -9,7 +9,6 @@ import DRouteUtilities "../dRouteUtilities";
 import RegCanisterDef "../droute/main";
 import UtilityTestCanisterDef "test_runner_droute_utilities";
 import PublisherTestCanisterDef "test_publisher";
-import PipelinifyRunnerDef "_pipelinifyTest-Runner";
 
 
 actor {
@@ -19,7 +18,7 @@ actor {
     let RegCanister : RegCanisterDef.DRoute = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
     let UtilityTestCanister : UtilityTestCanisterDef.test_runner_droute_utilities = actor("rrkah-fqaaa-aaaaa-aaaaq-cai");
     let PublisherTestCanister : PublisherTestCanisterDef.test_publisher = actor("renrk-eyaaa-aaaaa-aaada-cai");
-    let PipelinifyRunnerCanister : PipelinifyRunnerDef.pipelinify_runner = actor("rkp4c-7iaaa-aaaaa-aaaca-cai");
+    
     public shared func test() : async Text {
 
 
@@ -41,13 +40,7 @@ actor {
           return result;
         });
 
-        it.should("run pipelinify tests", func () : async C.TestResult = async {
-          let result = await PipelinifyRunnerCanister.Test();
-          Debug.print(debug_show(result));
-          return #success;
-
-        });
-
+       
 
         /*
         it.should("notify function with included data", func () : async C.TestResult = async {

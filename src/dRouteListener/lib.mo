@@ -20,7 +20,7 @@ import Hash "mo:base/Hash";
 import HashMap "mo:base/HashMap";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
-import TrixTypes "../TrixTypes";
+import Candy "mo:candy/types";
 import Principal "mo:base/Principal";
 //import RegCanister "../droute/main";
 import dRouteTypes "../dRouteTypes";

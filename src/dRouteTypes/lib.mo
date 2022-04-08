@@ -16,11 +16,11 @@ import MetaTree "../metatree/lib";
 import Nat16 "mo:base/Nat16";
 import Nat32 "mo:base/Nat32";
 import Nat8 "mo:base/Nat8";
-import PipelinifyTypes "../PipelinifyTypes";
+import PipelinifyTypes "mo:pipelinify/types";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
-import TrixTypes "../trixTypes";
+import Candy "mo:candy/types";
 
 
 module {
@@ -50,7 +50,7 @@ module {
     //field 0 : name - text
     //field 1 : source - principal
     //field n-2...data
-    public type DRouteEventStable = [TrixTypes.AddressedChunk];
+    public type DRouteEventStable = [Candy.AddressedChunk];
 
     public type ValidSourceOptions = {
         #whitelist: [Principal];

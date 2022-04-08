@@ -4,8 +4,12 @@ type ValidSourceOptions =
    dynamic: record {canister: text;};
    whitelist: vec principal;
  };
-type TrixValue__1 = 
+type TrixValue = 
  variant {
+   Array: variant {
+            frozen: vec TrixValue;
+            thawed: vec TrixValue;
+          };
    Blob: blob;
    Bool: bool;
    Bytes: variant {
@@ -15,6 +19,10 @@ type TrixValue__1 =
    Class: vec Property__1;
    Empty;
    Float: float64;
+   Floats: variant {
+             frozen: vec float64;
+             thawed: vec float64;
+           };
    Int: int;
    Int16: int16;
    Int32: int32;
@@ -25,30 +33,11 @@ type TrixValue__1 =
    Nat32: nat32;
    Nat64: nat64;
    Nat8: nat8;
-   Principal: principal;
-   Text: text;
- };
-type TrixValue = 
- variant {
-   Blob: blob;
-   Bool: bool;
-   Bytes: variant {
-            frozen: vec nat8;
-            thawed: vec nat8;
-          };
-   Class: vec Property;
-   Empty;
-   Float: float64;
-   Int: int;
-   Int16: int16;
-   Int32: int32;
-   Int64: int64;
-   Int8: int8;
-   Nat: nat;
-   Nat16: nat16;
-   Nat32: nat32;
-   Nat64: nat64;
-   Nat8: nat8;
+   Nats: variant {
+           frozen: vec nat;
+           thawed: vec nat;
+         };
+   Option: opt TrixValue;
    Principal: principal;
    Text: text;
  };
@@ -134,13 +123,13 @@ type Property__1 =
  record {
    immutable: bool;
    name: text;
-   value: TrixValue__1;
+   value: TrixValue;
  };
 type Property = 
  record {
    immutable: bool;
    name: text;
-   value: TrixValue;
+   value: CandyValue;
  };
 type ProcessQueueResponse = 
  record {
@@ -222,17 +211,54 @@ type ChunkRequest =
    event: opt text;
    sourceIdentifier: opt Hash;
  };
+type CandyValue = 
+ variant {
+   Array: variant {
+            frozen: vec CandyValue;
+            thawed: vec CandyValue;
+          };
+   Blob: blob;
+   Bool: bool;
+   Bytes: variant {
+            frozen: vec nat8;
+            thawed: vec nat8;
+          };
+   Class: vec Property;
+   Empty;
+   Float: float64;
+   Floats: variant {
+             frozen: vec float64;
+             thawed: vec float64;
+           };
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: variant {
+           frozen: vec nat;
+           thawed: vec nat;
+         };
+   Option: opt CandyValue;
+   Principal: principal;
+   Text: text;
+ };
 type AddressedChunk__1 = 
  record {
    nat;
    nat;
-   TrixValue__1;
+   TrixValue;
  };
 type AddressedChunkArray = vec AddressedChunk__1;
 type AddressedChunk = 
  record {
    nat;
    nat;
-   TrixValue;
+   CandyValue;
  };
 service : () -> DRoute

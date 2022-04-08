@@ -1,0 +1,34 @@
+type DRouteEvent =
+  {
+    dRouteID : Nat;
+    dataConfig : DataConfig;
+    eventType : Text;
+    source : Principal;
+    userID : Nat
+  };
+type EventRegistrationStable =
+  {
+    eventType : Text;
+    publishingCanisters : [Text];
+    validSources : ValidSourceOptions
+  };
+type List<T> = ?(T, List<T>);
+type Subscription =
+  {
+    controllers : [Principal];
+    dRouteID : Nat;
+    destinationSet : [Principal];
+    eventType : Text;
+    filter : ?SubscriptionFilter;
+    status : {#started; #stopped};
+    throttle : ?SubscriptionThrottle;
+    userID : Nat
+  };
+type Tree<T> = ?(Int, T, Tree<T>, Tree<T>);
+actor {
+  stable var nonce : Nat;
+  stable var pendingQueue : ?(DRouteEvent, List<DRouteEvent>);
+  stable var upgradeEventRegistration : [EventRegistrationStable];
+  stable var upgradePendingHeap :
+    ?(Int, Subscription, Tree<Subscription>, Tree<Subscription>)
+};

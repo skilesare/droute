@@ -24,15 +24,17 @@ import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 
 import HashMap "mo:base/HashMap";
-import TrixTypes "../TrixTypes";
+import Candy "mo:candy/types";
+import Conversion "mo:candy/conversion";
+import Workspace "mo:candy/workspace";
 import SHA256 "../dRouteUtilities/SHA256";
 import MerkleTree "../dRouteUtilities/MerkleTree";
 import CertifiedData "mo:base/CertifiedData";
 
-import PipelinifyTypes "../PipelinifyTypes";
+import PipelinifyTypes "mo:pipelinify/types";
 
 module {
-    type AddressedChunkArray = TrixTypes.AddressedChunkArray;
+    type AddressedChunkArray = Candy.AddressedChunkArray;
 
 
     public type Entry = {
@@ -114,7 +116,7 @@ module {
         //todo: we really need a sha256 Hashmap
         var namespaceMap : HashMap.HashMap<Nat,[EntryGroup]> = HashMap.HashMap<Nat,[EntryGroup]>(1, Nat.equal, bigNatToNat32);
         var certifiedTree = MerkleTree.empty();
-        let natToBytes = TrixTypes.natToBytes;
+        let natToBytes = Conversion.natToBytes;
         let h = MerkleTree.h;
         let h2 = MerkleTree.h2;
         let h3 = MerkleTree.h3;
@@ -130,7 +132,7 @@ module {
                     Blob.fromArray(
                         natToBytes(marker))));
             Debug.print("writing key " # debug_show(key));
-            let value = h(Blob.fromArray(TrixTypes.flattenAddressedChunkArray(data)));
+            let value = h(Blob.fromArray(Workspace.flattenAddressedChunkArray(data)));
             certifiedTree := MerkleTree.put(certifiedTree, key, value);
             CertifiedData.set(MerkleTree.treeHash(certifiedTree));
         };
@@ -159,7 +161,7 @@ module {
         };
 
         func namespaceToHash(namespace: Text) : Nat{
-            return TrixTypes.bytesToNat(SHA256.sha256(TrixTypes.textToBytes(namespace)))
+            return Conversion.bytesToNat(SHA256.sha256(Conversion.textToBytes(namespace)))
         };
 
         public func write(namespace : Text, primaryID : Nat, dataConfig: PipelinifyTypes.DataConfig, bCertify : Bool) : async Nat{
@@ -296,7 +298,7 @@ module {
             //todo: write to metatree service
             let marker = 1; //we use 1 with replace because it is always unique
             Debug.print("in replace " # namespace # debug_show(primaryID));
-            let namespaceHash = TrixTypes.bytesToNat(SHA256.sha256(TrixTypes.textToBytes(namespace)));
+            let namespaceHash = Conversion.bytesToNat(SHA256.sha256(Conversion.textToBytes(namespace)));
             Debug.print("namespaceHash" # debug_show(namespaceHash));
 
             //var currentList : ?[Entry] = namespaceMap.get(namespaceHash);
@@ -368,7 +370,7 @@ module {
 
 
         func calcIndexMeta(index : MetaTreeIndex, data : AddressedChunkArray) : ?{primaryID : Nat; postFix : Text} {
-            let val = TrixTypes.getDataChunkFromAddressedChunkArray(data, index.dataZone, index.dataChunk);
+            let val = Workspace.getDataChunkFromAddressedChunkArray(data, index.dataZone, index.dataChunk);
             let meta = switch(index.indexType){
                 case(#Nat){
                     let n = switch(val){case(#Nat(val)){val};case(_){return null;}};
@@ -384,14 +386,14 @@ module {
                     primaryID = Int.abs(n)};
                 };
                 case(#Text){
-                    let n = SHA256.sha256(TrixTypes.textToBytes(switch(val){case(#Text(val)){val};case(_){return null;}}));
-                    {postFix = TrixTypes.bytesToText(n);
-                    primaryID = TrixTypes.bytesToNat(n)};
+                    let n = SHA256.sha256(Conversion.textToBytes(switch(val){case(#Text(val)){val};case(_){return null;}}));
+                    {postFix = Conversion.bytesToText(n);
+                    primaryID = Conversion.bytesToNat(n)};
                 };
                 case(#Principal){
-                    let n = SHA256.sha256(TrixTypes.principalToBytes(switch(val){case(#Principal(val)){val};case(_){return null;}}));
+                    let n = SHA256.sha256(Conversion.principalToBytes(switch(val){case(#Principal(val)){val};case(_){return null;}}));
                     {postFix = Principal.toText(switch(val){case(#Principal(val)){val};case(_){return null;}});
-                    primaryID = TrixTypes.bytesToNat(n)};
+                    primaryID = Conversion.bytesToNat(n)};
                 };
                 case(_){
                     {postFix="Not Implemented";
@@ -440,7 +442,7 @@ module {
 
         public func readFilterPage(namespace : Text, minID : ?Nat, maxID : ?Nat, lastID : Nat, lastMarker: Nat) : ReadResponse {
 
-            let namespaceHash = TrixTypes.bytesToNat(SHA256.sha256(TrixTypes.textToBytes(namespace)));
+            let namespaceHash = Conversion.bytesToNat(SHA256.sha256(Conversion.textToBytes(namespace)));
             Debug.print("getting logs for hash " # debug_show(namespaceHash) # " " # namespace);
             //todo: makesure there isn't a pointer to another canister
 
@@ -477,7 +479,7 @@ module {
                                 if(thisEntry.primaryID >= lastID and thisEntry.marker > lastMarker){
                                     //Debug.print("prcing entry " # debug_show(thisEntry));
                                     responseBuffer.add(thisEntry);
-                                    resultSize += TrixTypes.getAddressedChunkArraySize(thisEntry.data);
+                                    resultSize += Workspace.getAddressedChunkArraySize(thisEntry.data);
                                 };
                                 if(resultSize > maxchunkSize){
                                     //Debug.print("breaking because chunksize" # debug_show(resultSize));
@@ -493,7 +495,7 @@ module {
                                 };
                                 if(thisEntry.primaryID >= lastID and thisEntry.marker > lastMarker){
                                     responseBuffer.add(thisEntry);
-                                    resultSize += TrixTypes.getAddressedChunkArraySize(thisEntry.data);
+                                    resultSize += Workspace.getAddressedChunkArraySize(thisEntry.data);
                                 };
                                 if(resultSize > maxchunkSize){
                                     break buildResponse;
@@ -508,7 +510,7 @@ module {
                                 };
                                 if(thisEntry.primaryID >= lastID and thisEntry.marker > lastMarker){
                                     responseBuffer.add(thisEntry);
-                                    resultSize += TrixTypes.getAddressedChunkArraySize(thisEntry.data);
+                                    resultSize += Workspace.getAddressedChunkArraySize(thisEntry.data);
                                 };
                                 if(resultSize > maxchunkSize){
                                     break buildResponse;
@@ -526,7 +528,7 @@ module {
                                 };
                                 if(thisEntry.primaryID >= lastID and thisEntry.marker > lastMarker){
                                     responseBuffer.add(thisEntry);
-                                    resultSize += TrixTypes.getAddressedChunkArraySize(thisEntry.data);
+                                    resultSize += Workspace.getAddressedChunkArraySize(thisEntry.data);
                                 };
                                 if(resultSize > maxchunkSize){
                                     break buildResponse;
