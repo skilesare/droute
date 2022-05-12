@@ -53,6 +53,7 @@ actor class DRoute() = this {
 
     public shared func getPublishingCanisters(instances : Nat) : async [Text] {
         //todo: US 29; need to allocate and produce requested instances.
+        Debug.print("in getPublishingCanisters");
         return [Principal.toText(Principal.fromActor(this))];
     };
 

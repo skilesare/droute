@@ -39,7 +39,7 @@ module {
     public type RegCanisterActor =  dRouteTypes.RegCanisterActor;
     public type PublishingCanisterActor =  dRouteTypes.PublishingCanisterActor;
 
-    public class dRoutePublisher(){
+    public class dRoutePublisher(initArgs: {regPrincipal : Principal}){
         type Result<T,E> = Result.Result<T,E>;
 
         func selfHash(_self : Hash.Hash) : Hash.Hash {
@@ -49,7 +49,7 @@ module {
         var publishingCanisters : [Text] = [];
 
         //todo: create strategy for updating this as soon to instantiation as possible
-        public var regPrincipal = Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai");
+        public var regPrincipal = initArgs.regPrincipal;
 
         public func updateRegistration() {
             //pass in a complicated structure and call different functions on the reg canister to update the registration
@@ -59,10 +59,13 @@ module {
 
         public func syncRegistration() : async Bool {
             //pull configs from the reg canister and sync them with the local cache.
+            Debug.print("in sync Reg" # debug_show(regPrincipal));
             let RegCanister : RegCanisterActor = actor(Principal.toText(regPrincipal));
-
+            Debug.print("have reg canisters");
             //todo: may want to allow for private or public See UserStories 27. 28.
             publishingCanisters := await RegCanister.getPublishingCanisters(16);
+
+            
             Debug.print(debug_show(publishingCanisters));
 
             return true;
@@ -77,6 +80,7 @@ module {
             if(publishingCanisters.size() == 0){
                 Debug.print("syncing");
                 let sync = await syncRegistration();
+                Debug.print("done syncing");
             };
             Debug.print(debug_show(Int.abs(Time.now())));
             Debug.print(debug_show(publishingCanisters));

@@ -41,14 +41,16 @@ module {
     public type SubscriptionRequest =  dRouteTypes.SubscriptionRequest;
     public type SubscriptionResponse =  dRouteTypes.SubscriptionResponse;
 
-    public class dRouteListener(){
+    public class dRouteListener(initArgs : {
+        regPrincipal: Principal
+    }){
         type Result<T,E> = Result.Result<T,E>;
 
         func selfHash(_self : Hash.Hash) : Hash.Hash {
             _self;
         };
 
-        public var regPrincipal = Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai");
+        public var regPrincipal = initArgs.regPrincipal;
 
 
         public func subscribe(subscription : SubscriptionRequest) : async Result<SubscriptionResponse, PublishError> {

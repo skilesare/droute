@@ -10,7 +10,7 @@ import Nat8 "mo:base/Nat8";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 
-actor class test_runner_droute_utilities() = this{
+actor class test_runner_droute_utilities(initArgs : {regPrincipal : Principal}) = this{
     let it = C.Tester({ batchSize = 8 });
 
 

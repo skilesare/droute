@@ -20,7 +20,7 @@ import dRoutePublisher "../dRoutePublisher";
 
 import ExperimentalCycles "mo:base/ExperimentalCycles";
 
-actor class test_publisher() = this{
+actor class test_publisher(initArgs : {regPrincipal: Principal}) = this{
 
 
 
@@ -47,7 +47,7 @@ actor class test_publisher() = this{
     public shared func testSimpleNotify() : async {#success; #fail : Text} {
         Debug.print("running testSimpleNotify");
 
-        let dRoutePub = dRoutePublisher.dRoutePublisher();
+        let dRoutePub = dRoutePublisher.dRoutePublisher({regPrincipal = initArgs.regPrincipal});
 
         let event = {
             eventType = "test123";
@@ -111,7 +111,7 @@ actor class test_publisher() = this{
     public shared func testSubscribe() : async {#success; #fail : Text} {
         Debug.print("running testSubscribe");
 
-        let dRouteList  = dRouteListener.dRouteListener();
+        let dRouteList  = dRouteListener.dRouteListener({regPrincipal = initArgs.regPrincipal});
 
         let eventSub : DRouteTypes.SubscriptionRequest = {
             eventType = "test123";

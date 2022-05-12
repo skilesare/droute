@@ -1,27 +1,27 @@
 
 import C "mo:matchers/Canister";
-import M "mo:matchers/Matchers";
-import T "mo:matchers/Testable";
-import Debug "mo:base/Debug";
 import DRouteTypes "../dRouteTypes";
 import DRouteUtilities "../dRouteUtilities";
-
-import RegCanisterDef "../droute/main";
-import UtilityTestCanisterDef "test_runner_droute_utilities";
+import Debug "mo:base/Debug";
+import M "mo:matchers/Matchers";
+import Principal "mo:base/Principal";
 import PublisherTestCanisterDef "test_publisher";
+import RegCanisterDef "../droute/main";
+import T "mo:matchers/Testable";
+import UtilityTestCanisterDef "test_runner_droute_utilities";
 
 
 actor {
     let it = C.Tester({ batchSize = 8 });
 
-    //this is annoying, but it is gets around the "not defined bug";
-    let RegCanister : RegCanisterDef.DRoute = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
-    let UtilityTestCanister : UtilityTestCanisterDef.test_runner_droute_utilities = actor("rrkah-fqaaa-aaaaa-aaaaq-cai");
-    let PublisherTestCanister : PublisherTestCanisterDef.test_publisher = actor("renrk-eyaaa-aaaaa-aaada-cai");
     
     public shared func test() : async Text {
 
-
+          //this is annoying, but it is gets around the "not defined bug";
+      let RegCanister : RegCanisterDef.DRoute = await RegCanisterDef.DRoute();
+      let UtilityTestCanister : UtilityTestCanisterDef.test_runner_droute_utilities = await UtilityTestCanisterDef.test_runner_droute_utilities({regPrincipal= Principal.fromActor(RegCanister)});
+      let PublisherTestCanister : PublisherTestCanisterDef.test_publisher = await PublisherTestCanisterDef.test_publisher({regPrincipal= Principal.fromActor(RegCanister)});
+    
 
         it.should("run utility tests", func () : async C.TestResult = async {
           let result = await UtilityTestCanister.test();
@@ -42,21 +42,6 @@ actor {
 
        
 
-        /*
-        it.should("notify function with included data", func () : async C.TestResult = async {
-          let notification = await RegCanister.eventPublish({type = "com.test", data = #dataIncluded{}});
-          M.attempt(greeting, M.equals(T.text("Hello, Christoph!")))
-        });
-
-        it.should("notify function with included data", func () : async C.TestResult = async {
-          let notification = await RegCanister.eventPublish({type = "com.test", data = #dataIncluded{}});
-          M.attempt(greeting, M.equals(T.text("Hello, Christoph!")))
-        });
-        */
-
-        //todo: test notify function with pull specification
-        //todo: test notify function with pullquery specification
-        //todo: test notify function with push specification
 
 
 
