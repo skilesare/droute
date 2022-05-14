@@ -3,36 +3,40 @@
 import Blob "mo:base/Blob";
 import Buffer "mo:base/Buffer";
 import C "mo:matchers/Canister";
-import DRouteTypes "../DRouteTypes/lib";
-import DRouteUtilities "../DRouteUtilities/lib";
+import DRouteTypes "../droute_2/types";
 import Debug "mo:base/Debug";
 import M "mo:matchers/Matchers";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Iter "mo:base/Iter";
 import Option "mo:base/Option";
 import Array "mo:base/Array";
 import S "mo:matchers/Suite";
 import T "mo:matchers/Testable";
 import Candy "mo:candy/types";
-import MetaTree "../metatree/lib";
-import dRouteListener "../dRouteListener";
-import dRoutePublisher "../dRoutePublisher";
+import dRoutePublisher "../droute_2/publisher";
+import dRouteRegistration "../droute_2/registration";
 
 import ExperimentalCycles "mo:base/ExperimentalCycles";
 
-actor class test_publisher(initArgs : {regPrincipal: Principal}) = this{
+actor class test_droute_2() = this {
 
 
 
-    let recievedEvents : Buffer.Buffer<DRouteTypes.DRouteEvent> = Buffer.Buffer<DRouteTypes.DRouteEvent>(16);
-
+    //let recievedEvents : Buffer.Buffer<DRouteTypes.DRouteEvent> = Buffer.Buffer<DRouteTypes.DRouteEvent>(16);
+    //dummy instantiation...reset in each test
+    var dRoutePub = dRoutePublisher.dRoutePublisher(#StartUp({
+            self = Principal.fromText("aaaaa-aa");
+            reg_canister = Principal.fromText("aaaaa-aa");
+            onEventPublished = null
+        }));
 
     public shared func test() : async {#success; #fail : Text} {
-        Debug.print("running tests for publisher");
+        Debug.print("running tests for droute_2");
 
         let suite = S.suite("test publisher", [
-                    S.test("testSimpleNotify", switch(await testSimpleNotify()){case(#success){true};case(_){false};}, M.equals<Bool>(T.bool(true))),
-                    S.test("testSubscribe", switch(await testSubscribe()){case(#success){true};case(_){false};}, M.equals<Bool>(T.bool(true)))
+                    S.test("test getPublishingCanisters", switch(await testGetPublishingCanisters()){case(#success){true};case(_){false};}, M.equals<Bool>(T.bool(true))),
+                    
                 ]);
         S.run(suite);
 
@@ -43,66 +47,55 @@ actor class test_publisher(initArgs : {regPrincipal: Principal}) = this{
     };
 
 
-    public shared func testSimpleNotify() : async {#success; #fail : Text} {
-        Debug.print("running testSimpleNotify");
+    public shared func testGetPublishingCanisters() : async {#success; #fail : Text} {
+        Debug.print("running testGetPublishingCanisters");
 
-        let dRoutePub = dRoutePublisher.dRoutePublisher({regPrincipal = initArgs.regPrincipal});
+        let regCanister = await dRouteRegistration.DRouteRegistration();
 
-        let event = {
-            eventType = "test123";
-            userID = 1;
-            dataConfig = #dataIncluded{
-                data = [(0,0,#Bytes(#frozen([1:Nat8,2:Nat8,3:Nat8,4:Nat8])) : Candy.CandyValue)]};
+        dRoutePub := dRoutePublisher.dRoutePublisher(#StartUp({
+            self = Principal.fromActor(this);
+            reg_canister = Principal.fromActor(regCanister);
+            onEventPublished = null;
+        }));
+            
+        Debug.print("should have called");
+        let regResult = dRoutePub.syncRegistration();
+        Debug.print("did it callcalled");
 
-        };
-
-        Debug.print(debug_show(event));
-
-
-        let result = await dRoutePub.publish(event);
-
-        let regCanister : DRouteTypes.RegCanisterActor = actor(Principal.toText(dRoutePub.regPrincipal));
-        let regResult = await regCanister.getEventRegistration(event.eventType);
-
-        switch(result, regResult){
-            case(#ok(result), ?regResult){
-                Debug.print("running suite" # debug_show(result));
-
-                let suite = S.suite("test simpleNotify", [
-                    S.test("id exists", result.dRouteID, M.anything<Int>()),
-                    S.test("time exists", result.timeRecieved, M.anything<Int>()),
-                    S.test("status is recieved", switch(result.status){case(#recieved){true};case(_){false};}, M.equals<Bool>(T.bool(true))),
-                    S.test("processor is handling canister", Principal.toText(result.publishCanister) : Text, M.equals<Text>(T.text(Principal.toText(dRoutePub.regPrincipal)))),
-
-                    ///test that the event was auto registerx
-                    S.test("registration text should match", regResult.eventType : Text, M.equals<Text>(T.text("test123" : Text))),
-                    S.test("valid sources should be this canister since it sent the first object", switch(regResult.validSources){case(#whitelist(list)){list[0] == Principal.fromActor(this)};case(_){false};}, M.equals<Bool>(T.bool(true))),
-                    S.test("publishing canister should be the reg canister until we implement dynamic allocation", regResult.publishingCanisters[0] == Principal.toText(dRoutePub.regPrincipal), M.equals<Bool>(T.bool(true)))
-                ]);
-
-                S.run(suite);
-
-                return #success;
-            };
-            case(#err(err), _){
-                Debug.print("an error " # debug_show(result));
-                return #fail(err.text);
-            };
-            case(_, null){
-                Debug.print("an error registration was null");
-                return #fail("an error registration was null");
+        label waitForResponse for(thisItem in Iter.range(0,10)){
+            Debug.print("waiting on a round");
+            let result = await regCanister.getMetrics_reg_droute();
+            if(dRoutePub.b_registration_updated == true){
+                break waitForResponse;
             };
         };
+
+        
+
+        let suite = S.suite("test testGetPublishingCanisters", [
+            S.test("registration size is updated", dRoutePub.b_registration_updated, M.equals<Bool>(T.bool(true))), //update to actual value when allocations occur
+            S.test("registration is regcanister", if(dRoutePub.get_publishing_canisters().size() == 1){
+                Principal.toText(dRoutePub.get_publishing_canisters()[0])
+            } else{"notaprincipal"}, M.equals<Text>(T.text(Principal.toText(Principal.fromActor(regCanister))))) //update to allocation when set up
+        ]);
+
+        Debug.print("running suite");
+        S.run(suite);
+        Debug.print("suite done");
+
+        return #success;
 
 
     };
 
-    public func __dRouteNotify(event: DRouteTypes.DRouteEvent) : async DRouteTypes.NotifyResponse{
-        recievedEvents.add(event);
-        return #ok(true);
+
+    public func get_publishing_canisters_confirm_droute(items: [Principal]) : (){
+        Debug.print("get_publishing_canisters_confirm_droute was called with " # debug_show(items));
+        let result = dRoutePub.syncRegistrationConfirm(items);
+        return;
     };
 
-    public func __dRouteSubValidate(principal : Principal.Principal, userID: Nat) : async (Bool, Blob, DRouteTypes.MerkleTreeWitness){
+    /* public func __dRouteSubValidate(principal : Principal.Principal, userID: Nat) : async (Bool, Blob, DRouteTypes.MerkleTreeWitness){
 
         return (true, Blob.fromArray([1:Nat8]), #empty);
     };
@@ -265,7 +258,7 @@ actor class test_publisher(initArgs : {regPrincipal: Principal}) = this{
         };
 
 
-    };
+    }; */
 
 
 
